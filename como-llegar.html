@@ -1,0 +1,1202 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Cómo llegar - Balneario Uncía</title>
+  <link rel="stylesheet" href="style.css" />
+  <script src="fondo.js" defer></script>
+  
+  <!-- Carga del visor 3D Model Viewer (para el robot/avatar) -->
+  <script type="module" src="https://cdnjs.cloudflare.com/ajax/libs/model-viewer/3.4.0/model-viewer.min.js"></script>
+  
+  <!-- Leaflet para mapas interactivos -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  
+  <!-- Leaflet Routing Machine para rutas reales -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet-routing-machine@3.2.12/dist/leaflet-routing-machine.css" />
+  <script src="https://unpkg.com/leaflet-routing-machine@3.2.12/dist/leaflet-routing-machine.js"></script>
+  
+  <!-- Font Awesome para iconos -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  
+  <style>
+    /* Estilos para la página de cómo llegar */
+    .como-llegar {
+      padding: 20px;
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+    
+    .main-layout {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 30px;
+      margin: 30px 0;
+    }
+    
+    /* Estilos para el avatar 3D */
+    .ai-avatar-container {
+      flex: 1;
+      min-width: 300px;
+      background: rgba(0, 0, 0, 0.3);
+      border-radius: 15px;
+      padding: 20px;
+      box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
+      border: 1px solid rgba(0, 255, 255, 0.3);
+      position: relative;
+      overflow: hidden;
+      transition: all 0.3s ease;
+    }
+    
+    .ai-avatar-container:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 15px 30px rgba(0, 150, 255, 0.4);
+      border-color: rgba(0, 255, 255, 0.6);
+    }
+    
+    .ai-avatar {
+      width: 100%;
+      height: 300px;
+      border-radius: 10px;
+      --poster-color: transparent;
+      background: none;
+    }
+    
+    .ai-speech-bubble {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      background: rgba(0, 255, 255, 0.9);
+      color: #000;
+      padding: 15px;
+      border-radius: 20px;
+      max-width: 200px;
+      font-weight: bold;
+      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+      animation: pulse 2s infinite;
+    }
+    
+    @keyframes pulse {
+      0% { transform: scale(1); }
+      50% { transform: scale(1.05); }
+      100% { transform: scale(1); }
+    }
+    
+    .ai-controls {
+      margin-top: 20px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      justify-content: center;
+    }
+    
+    .ai-btn {
+      padding: 10px 15px;
+      background: linear-gradient(45deg, #1f2829, #293b41);
+      color: #fff;
+      border: none;
+      border-radius: 20px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      border: 1px solid rgba(0, 255, 255, 0.3);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    
+    .ai-btn:hover {
+      background: linear-gradient(45deg, #2f3739, rgb(56, 63, 63));
+      transform: translateY(-3px);
+      box-shadow: 0 5px 15px rgba(0, 150, 255, 0.4);
+    }
+    
+    /* Estilos para el mapa interactivo */
+    .mapa-container {
+      flex: 2;
+      min-width: 300px;
+      background: rgba(0, 0, 0, 0.3);
+      border-radius: 15px;
+      padding: 20px;
+      box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
+      border: 1px solid rgba(0, 255, 255, 0.3);
+      position: relative;
+      overflow: hidden;
+    }
+    
+    #mapa {
+      width: 100%;
+      height: 400px;
+      border-radius: 10px;
+      z-index: 1;
+    }
+    
+    .mapa-controls {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      z-index: 2;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    
+    .mapa-btn {
+      width: 40px;
+      height: 40px;
+      border-radius: 40%;
+      background: rgba(255, 255, 255, 0.8);
+      border: none;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      cursor: pointer;
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+      transition: all 0.3s ease;
+    }
+    
+    .mapa-btn:hover {
+      background: rgba(0, 255, 255, 0.8);
+      transform: scale(1.1);
+    }
+    
+    /* Estilos para las rutas */
+    .rutas-container {
+      width: 100%;
+      margin-top: 200px;
+    }
+    
+    .ruta-tabs {
+      display: flex;
+      margin-bottom: 20px;
+      border-bottom: 2px solid rgba(0, 255, 255, 0.3);
+    }
+    
+    .ruta-tab {
+      padding: 10px 20px;
+      background: none;
+      border: none;
+      color: #ddd;
+      cursor: pointer;
+      font-size: 1rem;
+      font-weight: bold;
+      transition: all 0.3s ease;
+      position: relative;
+    }
+    
+    .ruta-tab.active {
+      color: #00ffff;
+    }
+    
+    .ruta-tab.active::after {
+      content: '';
+      position: absolute;
+      bottom: -2px;
+      left: 0;
+      width: 100%;
+      height: 2px;
+      background: #00ffff;
+    }
+    
+    .ruta-tab:hover {
+      color: #fff;
+    }
+    
+    .ruta-content {
+      display: none;
+      background: rgba(0, 0, 0, 0.3);
+      border-radius: 15px;
+      padding: 20px;
+      box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
+      border: 1px solid rgba(0, 255, 255, 0.3);
+    }
+    
+    .ruta-content.active {
+      display: block;
+      animation: fadeIn 0.5s ease;
+    }
+    
+    .ruta-details {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 20px;
+      margin-top: 20px;
+    }
+    
+    .ruta-info {
+      flex: 1;
+      min-width: 250px;
+      background: rgba(0, 0, 0, 0.2);
+      border-radius: 10px;
+      padding: 15px;
+      border-left: 3px solid #00ffff;
+    }
+    
+    .ruta-info h3 {
+      color: #00ffff;
+      margin-top: 0;
+      margin-bottom: 15px;
+      font-size: 1.2rem;
+    }
+    
+    .ruta-info ul {
+      padding-left: 20px;
+      margin: 0;
+    }
+    
+    .ruta-info li {
+      margin-bottom: 8px;
+      color: #ddd;
+    }
+    
+    .ruta-map {
+      flex: 2;
+      min-width: 300px;
+      height: 250px;
+      border-radius: 10px;
+      overflow: hidden;
+    }
+    
+    /* Estilos para la información adicional */
+    .info-extra {
+      margin-top: 30px;
+      background: rgba(0, 0, 0, 0.3);
+      border-radius: 15px;
+      padding: 20px;
+      box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
+      border: 1px solid rgba(0, 255, 255, 0.3);
+    }
+    
+    .info-extra h3 {
+      color: #00ffff;
+      margin-top: 0;
+      margin-bottom: 15px;
+      font-size: 1.3rem;
+    }
+    
+    .info-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 20px;
+    }
+    
+    .info-card {
+      background: rgba(0, 0, 0, 0.2);
+      border-radius: 10px;
+      padding: 15px;
+      border-left: 3px solid #00ffff;
+      transition: all 0.3s ease;
+    }
+    
+    .info-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 5px 15px rgba(0, 150, 255, 0.4);
+    }
+    
+    .info-card h4 {
+      color: #00ffff;
+      margin-top: 0;
+      margin-bottom: 10px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    
+    .info-card p {
+      color: #ddd;
+      margin: 0;
+      line-height: 1.5;
+    }
+    
+    /* Estilos para el chatbot */
+    .chatbot-container {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      width: 300px;
+      height: 400px;
+      background: rgba(0, 0, 0, 0.8);
+      border-radius: 15px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+      border: 2px solid rgba(0, 255, 255, 0.5);
+      display: flex;
+      flex-direction: column;
+      z-index: 1000;
+      transition: all 0.3s ease;
+      transform: translateY(420px);
+    }
+    
+    .chatbot-container.active {
+      transform: translateY(0);
+    }
+    
+    .chatbot-header {
+      padding: 15px;
+      border-bottom: 1px solid rgba(0, 255, 255, 0.3);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    
+    .chatbot-title {
+      color: #00ffff;
+      font-weight: bold;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    
+    .chatbot-close {
+      background: none;
+      border: none;
+      color: #fff;
+      font-size: 1.2rem;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+    
+    .chatbot-close:hover {
+      color: #00ffff;
+      transform: rotate(90deg);
+    }
+    
+    .chatbot-messages {
+      flex: 1;
+      padding: 15px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    
+    .message {
+      max-width: 80%;
+      padding: 10px 15px;
+      border-radius: 15px;
+      word-wrap: break-word;
+    }
+    
+    .message.bot {
+      background: rgba(0, 255, 255, 0.2);
+      color: #fff;
+      align-self: flex-start;
+      border-bottom-left-radius: 5px;
+    }
+    
+    .message.user {
+      background: rgba(255, 255, 255, 0.2);
+      color: #fff;
+      align-self: flex-end;
+      border-bottom-right-radius: 5px;
+    }
+    
+    .chatbot-input {
+      padding: 15px;
+      border-top: 1px solid rgba(0, 255, 255, 0.3);
+      display: flex;
+      gap: 10px;
+    }
+    
+    .chatbot-input input {
+      flex: 1;
+      padding: 10px 15px;
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(0, 255, 255, 0.3);
+      border-radius: 20px;
+      color: #fff;
+      outline: none;
+    }
+    
+    .chatbot-input button {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      background: rgba(0, 255, 255, 0.3);
+      border: none;
+      color: #fff;
+      cursor: pointer;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      transition: all 0.3s ease;
+    }
+    
+    .chatbot-input button:hover {
+      background: rgba(0, 255, 255, 0.5);
+      transform: scale(1.1);
+    }
+    
+    .chatbot-trigger {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      width: 60px;
+      height: 60px;
+      border-radius: 50%;
+      background: rgba(0, 255, 255, 0.8);
+      border: none;
+      color: #000;
+      font-size: 1.5rem;
+      cursor: pointer;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+      z-index: 999;
+      transition: all 0.3s ease;
+    }
+    
+    .chatbot-trigger:hover {
+      transform: scale(1.1);
+      box-shadow: 0 8px 25px rgba(0, 150, 255, 0.6);
+    }
+    
+    /* Animación de transición */
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    
+    /* Estilos responsivos */
+    @media (max-width: 768px) {
+      .main-layout {
+        flex-direction: column;
+      }
+      
+      .ai-avatar-container {
+        order: 2;
+      }
+      
+      .mapa-container {
+        order: 1;
+      }
+      
+      .ruta-details {
+        flex-direction: column;
+      }
+      
+      .chatbot-container {
+        width: 90%;
+        height: 350px;
+        right: 5%;
+        left: 5%;
+      }
+    }
+    /* Botones de navegación */
+        .nav-buttons {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            z-index: 100;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .nav-to-main {
+            background-color: rgba(255, 255, 255, 0.2);
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 30px;
+            font-size: 1rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            backdrop-filter: blur(5px);
+            transition: all 0.3s ease;
+        }
+
+        .nav-to-main:hover {
+            background-color: rgba(255, 255, 255, 0.3);
+            transform: translateY(-2px);
+        }
+  </style>
+</head>
+<body>
+  <!-- Fondo animado -->
+  <div class="animated-background">
+    <div class="gradient-layer"></div>
+    <div class="wave-layer"></div>
+    <div class="wave-layer"></div>
+    <div class="wave-layer"></div>
+  </div>
+
+    <!-- Botones de navegación -->
+        <div class="nav-buttons">
+            <button class="nav-to-main" onclick="window.location.href='index.html'">
+                <i class="fas fa-home"></i>
+                <span>Página Principal</span>
+            </button>
+            <button class="nav-to-main" id="infoBalnearioBtn">
+                <i class="fas fa-info-circle"></i>
+                <span>Información Balneario</span>
+            </button>
+            <button class="nav-to-main" onclick="window.location.href='galeria.html'">
+                <i class="fas fa-images"></i>
+                <span>Galería y Servicios</span>
+            </button>
+            <button class="nav-to-main" onclick="window.location.href='como-llegar.html'">
+                <i class="fas fa-map-marker-alt"></i>
+                <span>Ubicación</span>
+            </button>
+            <button class="nav-to-main" onclick="window.location.href='contactos.html'">
+                <i class="fas fa-envelope"></i>
+                <span>Contactos</span>
+            </button>
+        </div>
+
+  <div class="contenido-principal">
+    <header>
+      ¿CÓMO LLEGAR AL BALNEARIO?
+    </header>
+
+    <main class="como-llegar">
+      <p>El Balneario de Aguas Termales se encuentra en las afueras del municipio de Uncía, en una zona tranquila rodeada de naturaleza.</p>
+      
+      <!-- Layout de dos columnas: Asistente IA + Mapa -->
+      <div class="main-layout">
+        <!-- Avatar 3D del asistente (robot animado con Model Viewer) -->
+        <div class="ai-avatar-container">
+          <model-viewer class="ai-avatar"
+            src="https://modelviewer.dev/shared-assets/models/RobotExpressive.glb"
+            alt="ARIA - Asistente IA" auto-rotate camera-controls
+            background-color="transparent" shadow-intensity="0.5" autoplay>
+          </model-viewer>
+          
+          <div class="ai-speech-bubble">
+            ¡Hola! Soy ARIA, tu asistente virtual. Haz clic en los botones para obtener información sobre cómo llegar.
+          </div>
+          
+          <div class="ai-controls">
+            <button class="ai-btn" onclick="showRoute('llallagua')">
+              <i class="fas fa-route"></i> Desde Llallagua
+            </button>
+            <button class="ai-btn" onclick="showRoute('oruro')">
+              <i class="fas fa-route"></i> Desde Oruro
+            </button>
+            <button class="ai-btn" onclick="showRoute('uncia')">
+              <i class="fas fa-route"></i> Desde Uncia
+            </button>
+          </div>
+        </div>
+        
+        <!-- Mapa interactivo -->
+        <div class="mapa-container">
+          <div id="mapa"></div>
+          <div class="mapa-controls">
+            <button class="mapa-btn" onclick="centerMap()" title="Centrar mapa">
+              <i class="fas fa-crosshairs"></i>
+            </button>
+            <button class="mapa-btn" onclick="toggleSatellite()" title="Vista satélite">
+              <i class="fas fa-satellite"></i>
+            </button>
+            <button class="mapa-btn" onclick="locateUser()" title="Mi ubicación">
+              <i class="fas fa-location-arrow"></i>
+            </button>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Sección de rutas con pestañas -->
+      <div class="rutas-container">
+        <div class="ruta-tabs">
+          <button class="ruta-tab active" onclick="showTab('llallagua')">Desde Llallagua</button>
+          <button class="ruta-tab" onclick="showTab('oruro')">Desde Oruro</button>
+          <button class="ruta-tab" onclick="showTab('uncia')">Desde Uncia</button>
+        </div>
+        
+        <div id="llallagua" class="ruta-content active">
+          <h3>Ruta desde Llallagua</h3>
+          <p>La ruta más corta y directa para llegar al balneario desde Llallagua.</p>
+          
+          <div class="ruta-details">
+            <div class="ruta-info">
+              <h3><i class="fas fa-info-circle"></i> Información de la ruta</h3>
+              <ul>
+                <li>Distancia: 8 km</li>
+                <li>Tiempo estimado: 15 minutos</li>
+                <li>Estado de la carretera: Bueno</li>
+                <li>Peaje: No aplica</li>
+              </ul>
+            </div>
+            
+            <div class="ruta-map">
+              <div id="mapa-llallagua" style="width:100%; height:100%;"></div>
+            </div>
+          </div>
+        </div>
+        
+        <div id="oruro" class="ruta-content">
+          <h3>Ruta desde Oruro</h3>
+          <p>La ruta para llegar desde la ciudad de Oruro.</p>
+          
+          <div class="ruta-details">
+            <div class="ruta-info">
+              <h3><i class="fas fa-info-circle"></i> Información de la ruta</h3>
+              <ul>
+                <li>Distancia: 145 km</li>
+                <li>Tiempo estimado: 2 horas 30 minutos</li>
+                <li>Estado de la carretera: Regular a bueno</li>
+                <li>Peaje: No aplica</li>
+              </ul>
+            </div>
+            
+            <div class="ruta-map">
+              <div id="mapa-oruro" style="width:100%; height:100%;"></div>
+            </div>
+          </div>
+        </div>
+        
+        <div id="uncia" class="ruta-content">
+          <h3>Ruta desde Uncia</h3>
+          <p>La ruta más corta para llegar al balneario desde el centro de Uncia.</p>
+          
+          <div class="ruta-details">
+            <div class="ruta-info">
+              <h3><i class="fas fa-info-circle"></i> Información de la ruta</h3>
+              <ul>
+                <li>Distancia: 2.5 km</li>
+                <li>Tiempo estimado: 5 minutos</li>
+                <li>Estado de la carretera: Bueno</li>
+                <li>Peaje: No aplica</li>
+              </ul>
+            </div>
+            
+            <div class="ruta-map">
+              <div id="mapa-uncia" style="width:100%; height:100%;"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Información adicional -->
+      <section class="info-extra">
+        <h3>Información adicional</h3>
+        
+        <div class="info-grid">
+          <div class="info-card">
+            <h4><i class="fas fa-clock"></i> Horario de atención</h4>
+            <p>Lunes a Domingo: 8:00 a 18:00</p>
+          </div>
+          
+          <div class="info-card">
+            <h4><i class="fas fa-phone"></i> Contacto</h4>
+            <p>Teléfono: +591 72800000</p>
+          </div>
+          
+          <div class="info-card">
+            <h4><i class="fas fa-sun"></i> Recomendaciones</h4>
+            <p>Llevar traje de baño, toalla, y protector solar.</p>
+          </div>
+          
+          <div class="info-card">
+            <h4><i class="fas fa-car"></i> Estacionamiento</h4>
+            <p>Contamos con estacionamiento gratuito para visitantes.</p>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+  
+  <!-- Chatbot -->
+  <div class="chatbot-trigger" onclick="toggleChatbot()">
+    <i class="fas fa-comments"></i>
+  </div>
+  
+  <div class="chatbot-container" id="chatbot">
+    <div class="chatbot-header">
+      <div class="chatbot-title">
+        <i class="fas fa-robot"></i>
+        ARIA - Asistente Virtual
+      </div>
+      <button class="chatbot-close" onclick="toggleChatbot()">
+        <i class="fas fa-times"></i>
+      </button>
+    </div>
+    
+    <div class="chatbot-messages" id="chatbot-messages">
+      <div class="message bot">
+        ¡Hola! Soy ARIA, tu asistente virtual. ¿En qué puedo ayudarte hoy?
+      </div>
+    </div>
+    
+    <div class="chatbot-input">
+      <input type="text" id="chatbot-input" placeholder="Escribe tu mensaje..." onkeypress="handleChatbotKeypress(event)">
+      <button onclick="sendChatbotMessage()">
+        <i class="fas fa-paper-plane"></i>
+      </button>
+    </div>
+  </div>
+
+  <script>
+    // Variables globales
+    let map;
+    let currentRoute = 'llallagua';
+    let satelliteView = false;
+    let userLocation = null;
+    let routingControl = null;
+    
+    // Coordenadas del balneario (actualizadas)
+    const balnearioCoords = [-18.4488351197305, -66.54891628275428];
+    
+    // Coordenadas de las ciudades de partida (actualizadas)
+    const cityCoords = {
+      'llallagua': [-18.422106607210896, -66.57937822868024],  // Actualizado
+      'oruro': [-18.01642, -67.07861],
+      'uncia': [-18.465737017209445, -66.5658259729731]       // Actualizado
+    };
+    
+    // Función para generar voz de robot usando Web Speech API
+    function speakRobotVoice(text) {
+      if ('speechSynthesis' in window) {
+        // Cancelar cualquier speech en curso
+        window.speechSynthesis.cancel();
+        
+        // Crear nuevo utterance
+        const utterance = new SpeechSynthesisUtterance(text);
+        
+        // Configurar voz robótica
+        utterance.lang = 'es-ES';
+        utterance.rate = 0.9;  // Velocidad ligeramente más lenta
+        utterance.pitch = 0.8; // Tono más bajo para sonido robótico
+        utterance.volume = 0.8;
+        
+        // Buscar voz específica si está disponible
+        const voices = window.speechSynthesis.getVoices();
+        const spanishVoice = voices.find(voice => 
+          voice.lang.includes('es') && voice.name.includes('Google')
+        );
+        
+        if (spanishVoice) {
+          utterance.voice = spanishVoice;
+        }
+        
+        // Aplicar efectos de sonido robótico
+        utterance.onstart = function() {
+          // Agregar efectos de sonido adicionales si es necesario
+          console.log("Reproduciendo voz de robot...");
+        };
+        
+        // Reproducir el mensaje
+        window.speechSynthesis.speak(utterance);
+      } else {
+        console.log("La API de síntesis de voz no está soportada en este navegador.");
+      }
+    }
+    
+    // Inicialización del mapa principal
+    function initMap() {
+      // Crear el mapa
+      map = L.map('mapa').setView(balnearioCoords, 13);
+      
+      // Capa de mapa base
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+      }).addTo(map);
+      
+      // Marcador del balneario
+      const balnearioMarker = L.marker(balnearioCoords).addTo(map);
+      balnearioMarker.bindPopup('<b>Balneario de Aguas Termales de Uncía</b>').openPopup();
+      
+      // Inicializar mapas de rutas
+      initRouteMaps();
+      
+      // Mostrar ruta inicial desde Llallagua
+      drawRouteOnMainMap('llallagua');
+      
+      // Reproducir mensaje de bienvenida con voz de robot
+      setTimeout(() => {
+        const speechText = document.querySelector('.ai-speech-bubble').textContent;
+        speakRobotVoice(speechText);
+      }, 1000);
+    }
+    
+    // Inicializar mapas de rutas
+    function initRouteMaps() {
+      // Mapa de ruta desde Llallagua
+      const mapLlallagua = L.map('mapa-llallagua').setView(cityCoords.llallagua, 12);
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+      }).addTo(mapLlallagua);
+      
+      // Ruta desde Llallagua
+      const llallaguaCoords = cityCoords.llallagua;
+      L.marker(llallaguaCoords).addTo(mapLlallagua)
+        .bindPopup('Llallagua');
+      
+      L.marker(balnearioCoords).addTo(mapLlallagua)
+        .bindPopup('Balneario de Aguas Termales de Uncía');
+      
+      // Usar routing machine para mostrar ruta real
+      L.Routing.control({
+        waypoints: [
+          L.latLng(llallaguaCoords),
+          L.latLng(balnearioCoords)
+        ],
+        routeWhileDragging: false,
+        createMarker: function() { return null; }, // No crear marcadores adicionales
+        lineOptions: {
+          styles: [{color: '#00ffff', weight: 4, opacity: 0.8}]
+        },
+        show: false, // No mostrar instrucciones
+        addWaypoints: false // No permitir añadir waypoints
+      }).addTo(mapLlallagua);
+      
+      // Mapa de ruta desde Oruro
+      const mapOruro = L.map('mapa-oruro').setView(cityCoords.oruro, 9);
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+      }).addTo(mapOruro);
+      
+      // Ruta desde Oruro
+      const oruroCoords = cityCoords.oruro;
+      L.marker(oruroCoords).addTo(mapOruro)
+        .bindPopup('Oruro');
+      
+      L.marker(balnearioCoords).addTo(mapOruro)
+        .bindPopup('Balneario de Aguas Termales de Uncía');
+      
+      // Usar routing machine para mostrar ruta real
+      L.Routing.control({
+        waypoints: [
+          L.latLng(oruroCoords),
+          L.latLng(balnearioCoords)
+        ],
+        routeWhileDragging: false,
+        createMarker: function() { return null; },
+        lineOptions: {
+          styles: [{color: '#00ffff', weight: 4, opacity: 0.8}]
+        },
+        show: false,
+        addWaypoints: false
+      }).addTo(mapOruro);
+      
+      // Mapa de ruta desde Uncia
+      const mapUncia = L.map('mapa-uncia').setView(cityCoords.uncia, 13);
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+      }).addTo(mapUncia);
+      
+      // Ruta desde Uncia
+      const unciaCoords = cityCoords.uncia;
+      L.marker(unciaCoords).addTo(mapUncia)
+        .bindPopup('Uncia');
+      
+      L.marker(balnearioCoords).addTo(mapUncia)
+        .bindPopup('Balneario de Aguas Termales de Uncía');
+      
+      // Usar routing machine para mostrar ruta real
+      L.Routing.control({
+        waypoints: [
+          L.latLng(unciaCoords),
+          L.latLng(balnearioCoords)
+        ],
+        routeWhileDragging: false,
+        createMarker: function() { return null; },
+        lineOptions: {
+          styles: [{color: '#00ffff', weight: 4, opacity: 0.8}]
+        },
+        show: false,
+        addWaypoints: false
+      }).addTo(mapUncia);
+    }
+    
+    // Dibujar ruta en el mapa principal
+    function drawRouteOnMainMap(route) {
+      // Eliminar ruta anterior si existe
+      if (routingControl) {
+        map.removeControl(routingControl);
+      }
+      
+      // Eliminar marcador de ciudad anterior si existe
+      if (window.currentCityMarker) {
+        map.removeLayer(window.currentCityMarker);
+      }
+      
+      // Obtener coordenadas de la ciudad de origen
+      const originCoords = cityCoords[route];
+      
+      // Agregar marcador de la ciudad de origen
+      window.currentCityMarker = L.marker(originCoords).addTo(map);
+      window.currentCityMarker.bindPopup(`<b>${route.charAt(0).toUpperCase() + route.slice(1)}</b>`);
+      
+      // Crear ruta real usando routing machine
+      routingControl = L.Routing.control({
+        waypoints: [
+          L.latLng(originCoords),
+          L.latLng(balnearioCoords)
+        ],
+        routeWhileDragging: false,
+        createMarker: function() { return null; }, // No crear marcadores adicionales
+        lineOptions: {
+          styles: [{color: '#ff0000', weight: 5, opacity: 0.8}]
+        },
+        show: false, // No mostrar instrucciones
+        addWaypoints: false // No permitir añadir waypoints
+      }).addTo(map);
+      
+      // Ajustar vista del mapa para mostrar toda la ruta
+      const bounds = L.latLngBounds([originCoords, balnearioCoords]);
+      map.fitBounds(bounds, { padding: [50, 50] });
+    }
+    
+    // Centrar el mapa en el balneario
+    function centerMap() {
+      map.setView(balnearioCoords, 13);
+    }
+    
+    // Alternar vista satélite
+    function toggleSatellite() {
+      satelliteView = !satelliteView;
+      
+      // Eliminar capa actual
+      map.eachLayer(layer => {
+        if (layer instanceof L.TileLayer) {
+          map.removeLayer(layer);
+        }
+      });
+      
+      // Agregar nueva capa
+      if (satelliteView) {
+        L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+          attribution: 'Tiles &copy; Esri &mdash; Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, and the GIS User Community'
+        }).addTo(map);
+      } else {
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+          attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+        }).addTo(map);
+      }
+    }
+    
+    // Obtener ubicación del usuario
+    function locateUser() {
+      if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(function(position) {
+          const lat = position.coords.latitude;
+          const lng = position.coords.longitude;
+          
+          userLocation = [lat, lng];
+          
+          // Agregar marcador de usuario
+          if (userMarker) {
+            map.removeLayer(userMarker);
+          }
+          
+          const userMarker = L.marker(userLocation).addTo(map);
+          userMarker.bindPopup('Tu ubicación').openPopup();
+          
+          // Centrar mapa en la ubicación del usuario
+          map.setView(userLocation, 13);
+          
+          // Eliminar ruta anterior si existe
+          if (routingControl) {
+            map.removeControl(routingControl);
+          }
+          
+          // Crear ruta real desde la ubicación del usuario hasta el balneario
+          routingControl = L.Routing.control({
+            waypoints: [
+              L.latLng(userLocation),
+              L.latLng(balnearioCoords)
+            ],
+            routeWhileDragging: false,
+            createMarker: function() { return null; },
+            lineOptions: {
+              styles: [{color: '#ff5733', weight: 5, opacity: 0.8}]
+            },
+            show: false,
+            addWaypoints: false
+          }).addTo(map);
+          
+          // Obtener información de la ruta
+          routingControl.on('routesfound', function(e) {
+            const routes = e.routes;
+            const summary = routes[0].summary;
+            
+            // Convertir distancia a km
+            const distance = (summary.totalDistance / 1000).toFixed(2);
+            
+            // Convertir tiempo a minutos
+            const time = Math.round(summary.totalTime / 60);
+            
+            addChatbotMessage(`bot`, `Estás a ${distance} km del balneario. Tiempo estimado de viaje: ${time} minutos.`);
+          });
+          
+          // Abrir enlace de Google Maps con la ruta
+          const googleMapsUrl = `https://www.google.com/maps/dir/?api=1&destination=${balnearioCoords[0]},${balnearioCoords[1]}`;
+          window.open(googleMapsUrl, '_blank');
+          
+        }, function() {
+          addChatbotMessage('bot', 'No se pudo obtener tu ubicación. Asegúrate de haber dado permiso para acceder a tu ubicación.');
+        });
+      } else {
+        addChatbotMessage('bot', 'Tu navegador no soporta la geolocalización.');
+      }
+    }
+    
+    // Mostrar ruta específica
+    function showRoute(route) {
+      // Cambiar pestaña activa
+      document.querySelectorAll('.ruta-tab').forEach(tab => {
+        tab.classList.remove('active');
+      });
+      document.querySelector(`.ruta-tab[onclick="showTab('${route}')"]`).classList.add('active');
+      
+      // Mostrar contenido de la ruta
+      document.querySelectorAll('.ruta-content').forEach(content => {
+        content.classList.remove('active');
+      });
+      document.getElementById(route).classList.add('active');
+      
+      // Actualizar variable global
+      currentRoute = route;
+      
+      // Dibujar ruta en el mapa principal
+      drawRouteOnMainMap(route);
+      
+      // Mensaje del chatbot
+      const routeNames = {
+        'llallagua': 'Llallagua',
+        'oruro': 'Oruro',
+        'uncia': 'Uncia'
+      };
+      
+      addChatbotMessage('bot', `Te mostraré la ruta desde ${routeNames[route]} hasta el balneario.`);
+      
+      // Reproducir mensaje con voz de robot
+      speakRobotVoice(`Te mostraré la ruta desde ${routeNames[route]} hasta el balneario.`);
+    }
+    
+    // Cambiar pestaña de ruta
+    function showTab(tabName) {
+      // Cambiar pestaña activa
+      document.querySelectorAll('.ruta-tab').forEach(tab => {
+        tab.classList.remove('active');
+      });
+      document.querySelector(`.ruta-tab[onclick="showTab('${tabName}')"]`).classList.add('active');
+      
+      // Mostrar contenido de la ruta
+      document.querySelectorAll('.ruta-content').forEach(content => {
+        content.classList.remove('active');
+      });
+      document.getElementById(tabName).classList.add('active');
+      
+      // Actualizar variable global
+      currentRoute = tabName;
+      
+      // Dibujar ruta en el mapa principal
+      drawRouteOnMainMap(tabName);
+    }
+    
+    // Funcionalidad del chatbot
+    function toggleChatbot() {
+      const chatbot = document.getElementById('chatbot');
+      chatbot.classList.toggle('active');
+    }
+    
+    function sendChatbotMessage() {
+      const input = document.getElementById('chatbot-input');
+      const message = input.value.trim();
+      
+      if (message) {
+        // Agregar mensaje del usuario
+        addChatbotMessage('user', message);
+        
+        // Limpiar input
+        input.value = '';
+        
+        // Procesar mensaje y generar respuesta
+        setTimeout(() => {
+          const response = generateBotResponse(message);
+          addChatbotMessage('bot', response);
+          
+          // Reproducir respuesta con voz de robot
+          speakRobotVoice(response);
+        }, 500);
+      }
+    }
+    
+    function handleChatbotKeypress(event) {
+      if (event.key === 'Enter') {
+        sendChatbotMessage();
+      }
+    }
+    
+    function addChatbotMessage(sender, message) {
+      const messagesContainer = document.getElementById('chatbot-messages');
+      const messageElement = document.createElement('div');
+      messageElement.classList.add('message', sender);
+      messageElement.textContent = message;
+      
+      messagesContainer.appendChild(messageElement);
+      
+      // Scroll al final
+      messagesContainer.scrollTop = messagesContainer.scrollHeight;
+    }
+    
+    function generateBotResponse(message) {
+      const lowerMessage = message.toLowerCase();
+      
+      // Respuestas predefinidas
+      if (lowerMessage.includes('hola') || lowerMessage.includes('buenos días') || lowerMessage.includes('buenas tardes')) {
+        return '¡Hola! ¿En qué puedo ayudarte hoy?';
+      } else if (lowerMessage.includes('cómo llegar') || lowerMessage.includes('ruta') || lowerMessage.includes('dirección')) {
+        return 'Puedo mostrarte las rutas desde diferentes ciudades. ¿Desde dónde quieres venir?';
+      } else if (lowerMessage.includes('llallagua')) {
+        return 'Desde Llallagua son aproximadamente 8 km, unos 15 minutos en coche. Te mostraré la ruta detallada.';
+      } else if (lowerMessage.includes('oruro')) {
+        return 'Desde Oruro son aproximadamente 145 km, unas 2 horas 30 minutos en coche. Te mostraré la ruta detallada.';
+      } else if (lowerMessage.includes('uncia')) {
+        return 'Desde Uncia son aproximadamente 2.5 km, unos 5 minutos en coche. Te mostraré la ruta detallada.';
+      } else if (lowerMessage.includes('ubicación') || lowerMessage.includes('donde estoy')) {
+        return 'Puedo usar tu ubicación actual para mostrarte la mejor ruta. Haz clic en el botón de ubicación en el mapa.';
+      } else if (lowerMessage.includes('horario') || lowerMessage.includes('abierto')) {
+        return 'El balneario está abierto de lunes a domingo de 8:00 a 18:00 horas.';
+      } else if (lowerMessage.includes('precio') || lowerMessage.includes('costo') || lowerMessage.includes('entrada')) {
+        return 'Los precios varían según el día y la temporada. Te recomiendo contactar directamente al balneario al +591 72800000.';
+      } else if (lowerMessage.includes('servicio') || lowerMessage.includes('instalaciones')) {
+        return 'El balneario cuenta con piscinas termales, saunas, baños individuales y áreas de descanso. ¿Te gustaría saber más sobre alguna instalación en particular?';
+      } else if (lowerMessage.includes('gracias')) {
+        return '¡De nada! Estoy aquí para ayudarte. ¿Hay algo más en lo que pueda asistirte?';
+      } else if (lowerMessage.includes('adiós') || lowerMessage.includes('hasta luego')) {
+        return '¡Hasta luego! Espero que disfrutes tu visita al balneario.';
+      } else {
+        return 'No estoy seguro de entender tu pregunta. ¿Puedes reformularla o preguntarme sobre rutas, horarios o servicios del balneario?';
+      }
+    }
+    
+    // Variables para el mapa
+    let userMarker;
+    let routeLine;
+    
+    // Inicializar mapa cuando se carga la página
+    document.addEventListener('DOMContentLoaded', function() {
+      initMap();
+      
+      // Animación inicial del avatar
+      const avatar = document.querySelector('.ai-avatar');
+      avatar.addEventListener('load', () => {
+        // Obtener las animaciones disponibles del modelo
+        const anims = avatar.availableAnimations || [];
+        
+        // Intentamos buscar una animación que parezca que saluda
+        const greetingAnim = anims.find(a => /wave|greet|hello/i.test(a)) || anims[0];
+        
+        if (greetingAnim) {
+          avatar.animationName = greetingAnim;
+          avatar.play();
+        }
+      });
+      
+      // Agregar evento de clic al avatar para reproducir voz
+      document.querySelector('.ai-avatar-container').addEventListener('click', function() {
+        const speechText = document.querySelector('.ai-speech-bubble').textContent;
+        speakRobotVoice(speechText);
+      });
+    });
+  </script>
+</body>
+</html>

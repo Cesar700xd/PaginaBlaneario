@@ -1,0 +1,2162 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Galería del Balneario</title>
+  <link rel="stylesheet" href="style.css" />
+  <script src="fondo.js" defer></script>
+  
+  <!-- Biblioteca para panorama 360° -->
+  <script src="https://cdn.jsdelivr.net/npm/pannellum@2.5.6/build/pannellum.js"></script>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/pannellum@2.5.6/build/pannellum.css"/>
+  
+  <!-- Three.js para modelos 3D -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+  
+  <!-- Font Awesome para iconos -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  
+  <style>
+    /* Estilos generales mejorados */
+    .contenido-principal {
+      padding: 20px;
+      max-width: 1400px;
+      margin: 0 auto;
+    }
+    
+    header {
+      text-align: center;
+      font-size: 2.5rem;
+      color: #00ffff;
+      margin-bottom: 40px;
+      text-shadow: 0 0 10px rgba(0, 255, 255, 0.7);
+      position: relative;
+      display: inline-block;
+    }
+    
+    header::after {
+      content: '';
+      position: absolute;
+      bottom: -10px;
+      left: 0;
+      width: 100%;
+      height: 3px;
+      background: linear-gradient(90deg, transparent, #00ffff, transparent);
+    }
+    
+    /* Estilos para el carrusel automático mejorado */
+    .carrusel-container {
+      position: relative;
+      max-width: 50%;
+      margin: 2rem auto;
+      overflow: hidden;
+      border-radius: 15px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.7);
+      border: 2px solid rgba(0, 255, 255, 0.3);
+    }
+
+    .carrusel-slide {
+      display: none;
+      text-align: center;
+      animation: fadeIn 1s ease-in-out;
+      position: relative;
+    }
+
+    .carrusel-slide.active {
+      display: block;
+    }
+
+    .carrusel-slide img {
+      width: 100%;
+      height: 10;
+      border-radius: 13px;
+      transition: transform 1s ease;
+    }
+
+    .carrusel-slide:hover img {
+      transform: scale(0.5);
+    }
+
+    .carrusel-slide p {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      width: 100%;
+      margin: 0;
+      padding: 20px;
+      font-style: italic;
+      color: #fff;
+      font-size: 1.2rem;
+      text-shadow: 1px 1px 3px rgba(0,0,0,0.8);
+      background: linear-gradient(to top, rgba(0,0,0,0.8), transparent);
+      border-bottom-left-radius: 13px;
+      border-bottom-right-radius: 13px;
+    }
+
+    /* Indicadores mejorados */
+    .carrusel-indicadores {
+      text-align: center;
+      margin-top: 1rem;
+    }
+
+    .indicador {
+      display: inline-block;
+      width: 14px;
+      height: 14px;
+      border-radius: 50%;
+      background-color: rgba(255,255,255,0.5);
+      margin: 0 5px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    .indicador.active {
+      background-color: #00f5ff;
+      transform: scale(1.2);
+      box-shadow: 0 0 10px rgba(0, 245, 255, 0.7);
+    }
+
+    /* Controles de navegación mejorados */
+    .carrusel-control {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      background-color: rgba(0,0,0,0.6);
+      color: white;
+      border: none;
+      padding: 12px 18px;
+      font-size: 1.8rem;
+      cursor: pointer;
+      border-radius: 50%;
+      z-index: 10;
+      transition: all 0.3s ease;
+      border: 2px solid rgba(0, 255, 255, 0.5);
+    }
+
+    .carrusel-control:hover {
+      background-color: rgba(0, 100, 150, 0.8);
+      transform: translateY(-50%) scale(1.1);
+      box-shadow: 0 0 15px rgba(0, 255, 255, 0.7);
+    }
+
+    .carrusel-control.prev {
+      left: 15px;
+    }
+
+    .carrusel-control.next {
+      right: 15px;
+    }
+    
+    /* Sección de modelos 3D */
+    .modelos-3d-container {
+      margin: 50px auto;
+      max-width: 1200px;
+    }
+    
+    .modelos-3d-title {
+      text-align: center;
+      font-size: 2rem;
+      color: #00ffff;
+      margin-bottom: 30px;
+      text-shadow: 0 0 10px rgba(0, 255, 255, 0.5);
+    }
+    
+    .modelos-3d-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 30px;
+    }
+    
+    .modelo-3d-card {
+      background: rgba(0, 0, 0, 0.5);
+      border-radius: 15px;
+      overflow: hidden;
+      box-shadow: 0 10px 20px rgba(0, 0, 0, 0.5);
+      border: 1px solid rgba(0, 255, 255, 0.3);
+      transition: all 0.3s ease;
+    }
+    
+    .modelo-3d-card:hover {
+      transform: translateY(-10px);
+      box-shadow: 0 15px 30px rgba(0, 150, 255, 0.4);
+      border-color: rgba(0, 255, 255, 0.6);
+    }
+    
+    .modelo-3d-canvas {
+      width: 100%;
+      height: 250px;
+      position: relative;
+      cursor: grab;
+    }
+    
+    .modelo-3d-canvas:active {
+      cursor: grabbing;
+    }
+    
+    .modelo-3d-info {
+      padding: 20px;
+    }
+    
+    .modelo-3d-info h3 {
+      color: #00ffff;
+      margin-top: 0;
+      margin-bottom: 10px;
+      font-size: 1.4rem;
+    }
+    
+    .modelo-3d-info p {
+      color: #ddd;
+      margin: 0;
+      line-height: 1.5;
+    }
+    
+    .modelo-3d-btn {
+      display: inline-block;
+      margin-top: 15px;
+      padding: 8px 16px;
+      background: linear-gradient(45deg, #1f2829, #293b41);
+      color: #fff;
+      border: none;
+      border-radius: 20px;
+      font-size: 0.9rem;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      border: 1px solid rgba(0, 255, 255, 0.3);
+    }
+    
+    .modelo-3d-btn:hover {
+      background: linear-gradient(45deg, #2f3739, rgb(56, 63, 63));
+      transform: translateY(-3px);
+      box-shadow: 0 5px 15px rgba(0, 150, 255, 0.4);
+    }
+    
+    /* Contenedor de botones de panorama mejorado */
+    .panorama-buttons-container {
+      display: flex;
+      justify-content: center;
+      gap: 20px;
+      margin: 3rem auto;
+      flex-wrap: wrap;
+      max-width: 90%;
+    }
+
+    /* Botones de panorama 360° mejorados */
+    .panorama-btn {
+      display: block;
+      padding: 15px 25px;
+      background: linear-gradient(45deg, #1f2829, #293b41);
+      color: #fff;
+      border: none;
+      border-radius: 30px;
+      font-size: 1.1rem;
+      font-weight: bold;
+      cursor: pointer;
+      box-shadow: 0 8px 20px rgba(0, 150, 255, 0.4);
+      transition: all 0.3s ease;
+      position: relative;
+      overflow: hidden;
+      flex: 1 1 calc(25% - 20px);
+      min-width: 180px;
+      max-width: 250px;
+      text-align: center;
+    }
+
+    .panorama-btn::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+      transition: left 0.5s;
+    }
+
+    .panorama-btn:hover::before {
+      left: 100%;
+    }
+
+    .panorama-btn:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 12px 25px rgba(0, 150, 255, 0.6);
+      background: linear-gradient(45deg, #2f3739, rgb(56, 63, 63));
+    }
+
+    .panorama-btn:active {
+      transform: translateY(-2px);
+    }
+
+    /* Efectos específicos para cada botón */
+    .panorama-btn:nth-child(1) {
+      border-left: 4px solid #00ffff;
+    }
+
+    .panorama-btn:nth-child(2) {
+      border-left: 4px solid #ff6b6b;
+    }
+
+    .panorama-btn:nth-child(3) {
+      border-left: 4px solid #4ecdc4;
+    }
+
+    /* Modal para el panorama 360° mejorado */
+    .panorama-modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0, 0, 0, 0.9);
+      z-index: 1000;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .panorama-content {
+      position: relative;
+      width: 95%;
+      height: 90%;
+      max-width: 1400px;
+      border-radius: 15px;
+      overflow: hidden;
+      box-shadow: 0 0 40px rgba(0, 255, 255, 0.5);
+      border: 3px solid rgba(0, 255, 255, 0.3);
+    }
+
+    .panorama-close {
+      position: absolute;
+      top: 25px;
+      right: 25px;
+      background-color: rgba(255, 255, 255, 0.2);
+      color: white;
+      border: none;
+      width: 50px;
+      height: 50px;
+      border-radius: 50%;
+      font-size: 1.8rem;
+      cursor: pointer;
+      z-index: 1001;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      transition: all 0.3s ease;
+      backdrop-filter: blur(5px);
+      border: 2px solid rgba(255, 255, 255, 0.3);
+    }
+
+    .panorama-close:hover {
+      background-color: rgba(255, 255, 255, 0.4);
+      transform: rotate(90deg);
+      box-shadow: 0 0 20px rgba(0, 255, 255, 0.5);
+    }
+
+    /* Indicador de carga para panoramas mejorado */
+    .panorama-loading {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 70px;
+      height: 70px;
+      border: 6px solid rgba(255, 255, 255, 0.3);
+      border-radius: 50%;
+      border-top-color: #00ffff;
+      animation: spin 1s ease-in-out infinite;
+      z-index: 1000;
+    }
+
+    @keyframes spin {
+      to { transform: translate(-50%, -50%) rotate(360deg); }
+    }
+
+    /* Animación de transición mejorada */
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    
+    /* Tooltip para modelos 3D */
+    .modelo-tooltip {
+      position: absolute;
+      background: rgba(0, 255, 255, 0.9);
+      color: #000;
+      padding: 8px 12px;
+      border-radius: 20px;
+      font-weight: bold;
+      font-size: 14px;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+      pointer-events: none;
+      opacity: 0;
+      transition: opacity 0.3s ease;
+      z-index: 100;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      white-space: nowrap;
+    }
+    
+    .modelo-tooltip.visible {
+      opacity: 1;
+    }
+    
+    .modelo-tooltip .icon {
+      font-size: 16px;
+    }
+    
+    /* Información emergente para modelos 3D */
+    .modelo-info-modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0, 0, 0, 0.8);
+      z-index: 1000;
+      justify-content: center;
+      align-items: center;
+    }
+    
+    .modelo-info-content {
+      background: linear-gradient(135deg, #1a2a3a, #0d1b2a);
+      border-radius: 15px;
+      padding: 30px;
+      max-width: 600px;
+      width: 90%;
+      box-shadow: 0 0 30px rgba(0, 255, 255, 0.3);
+      border: 2px solid rgba(0, 255, 255, 0.3);
+      position: relative;
+    }
+    
+    .modelo-info-close {
+      position: absolute;
+      top: 15px;
+      right: 15px;
+      background: rgba(255, 255, 255, 0.2);
+      color: white;
+      border: none;
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      font-size: 1.5rem;
+      cursor: pointer;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      transition: all 0.3s ease;
+    }
+    
+    .modelo-info-close:hover {
+      background: rgba(255, 255, 255, 0.4);
+      transform: rotate(90deg);
+    }
+    
+    .modelo-info-content h2 {
+      color: #00ffff;
+      margin-top: 0;
+      margin-bottom: 20px;
+      font-size: 1.8rem;
+    }
+    
+    .modelo-info-content p {
+      color: #ddd;
+      line-height: 1.6;
+      margin-bottom: 15px;
+    }
+    
+    .modelo-info-content ul {
+      color: #ddd;
+      padding-left: 20px;
+    }
+    
+    .modelo-info-content li {
+      margin-bottom: 10px;
+    }
+
+    /* Botones de navegación */
+        .nav-buttons {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            z-index: 100;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .nav-to-main {
+            background-color: rgba(255, 255, 255, 0.2);
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 30px;
+            font-size: 1rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            backdrop-filter: blur(5px);
+            transition: all 0.3s ease;
+        }
+
+        .nav-to-main:hover {
+            background-color: rgba(255, 255, 255, 0.3);
+            transform: translateY(-2px);
+        }
+    
+    /* Botón Volver 3D */
+    .volver-3d-btn {
+      position: fixed;
+      bottom: 30px;
+      right: 30px;
+      background: linear-gradient(135deg, #00a8cc, #007ea7);
+      color: white;
+      border: none;
+      padding: 15px 25px;
+      border-radius: 50px;
+      font-size: 1.1rem;
+      font-weight: 600;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      box-shadow: 0 4px 20px rgba(0, 168, 204, 0.4);
+      transition: all 0.3s ease;
+      z-index: 1000;
+      overflow: hidden;
+      text-decoration: none;
+    }
+    
+    .volver-3d-btn:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 8px 25px rgba(0, 168, 204, 0.6);
+      background: linear-gradient(135deg, #007ea7, #003459);
+    }
+    
+    .volver-3d-btn i {
+      font-size: 1.5rem;
+      animation: pulse 2s infinite;
+    }
+    
+    @keyframes pulse {
+      0% { transform: scale(1); }
+      50% { transform: scale(1.1); }
+      100% { transform: scale(1); }
+    }
+  </style>
+</head>
+<body>
+  <!-- Fondo animado -->
+  <div class="animated-background">
+    <div class="gradient-layer"></div>
+    <div class="wave-layer"></div>
+    <div class="wave-layer"></div>
+    <div class="wave-layer"></div>
+  </div>
+
+    <!-- Botones de navegación -->
+        <div class="nav-buttons">
+            <button class="nav-to-main" onclick="window.location.href='index.html'">
+                <i class="fas fa-home"></i>
+                <span>Página Principal</span>
+            </button>
+            <button class="nav-to-main" id="infoBalnearioBtn">
+                <i class="fas fa-info-circle"></i>
+                <span>Información Balneario</span>
+            </button>
+            <button class="nav-to-main" onclick="window.location.href='galeria.html'">
+                <i class="fas fa-images"></i>
+                <span>Galeria y Servicios</span>
+            </button>
+            <button class="nav-to-main" onclick="window.location.href='como-llegar.html'">
+                <i class="fas fa-map-marker-alt"></i>
+                <span>Ubicación</span>
+            </button>
+            <button class="nav-to-main" onclick="window.location.href='contactos.html'">
+                <i class="fas fa-envelope"></i>
+                <span>Contactos</span>
+            </button>
+        </div>
+
+  <div class="contenido-principal">
+    <header>
+      GALERÍA Y SERVICIOS
+    </header>
+
+    <main>
+      <!-- Carrusel automático -->
+      <div class="carrusel-container">
+        <!-- Control anterior -->
+        <button class="carrusel-control prev">&#10094;</button>
+        
+        <!-- Slides -->
+         <div class="carrusel-slide">
+          <img src="/img/parqueo1.jpeg" alt="Imagen 6">
+          <p>"Las aguas termales tienen un efecto mágico en el cuerpo."</p>
+        </div>
+        <div class="carrusel-slide">
+          <img src="/img/piscina2.jpeg" alt="Imagen 6">
+          <p>"Las aguas termales tienen un efecto mágico en el cuerpo."</p>
+        </div>
+        <div class="carrusel-slide">
+          <img src="/img/snack.jpeg" alt="Imagen 6">
+          <p>"Las aguas termales tienen un efecto mágico en el cuerpo."</p>
+        </div>
+        <div class="carrusel-slide">
+          <img src="/img/parada de autos.jpeg" alt="Imagen 6">
+          <p>"Las aguas termales tienen un efecto mágico en el cuerpo."</p>
+        </div>
+
+        <div class="carrusel-slide active">
+          <img src="/img/turismo2.jpeg" alt="Imagen 1">
+          <p>"Una experiencia inolvidable en aguas termales. ¡Volveré!"</p>
+        </div>
+        
+        <div class="carrusel-slide">
+          <img src="/img/parqueo.jpeg" alt="Imagen 2">
+          <p>"Relajación total. Perfecto para escapar del estrés."</p>
+        </div>
+        
+        <div class="carrusel-slide">
+          <img src="/img/parqueo1.jpeg" alt="Imagen 3">
+          <p>"Hermoso lugar rodeado de naturaleza y tranquilidad."</p>
+        </div>
+        
+        <div class="carrusel-slide">
+          <img src="/img/baños individuales.jpeg" alt="Imagen 4">
+          <p>"Muy recomendado para toda la familia."</p>
+        </div>
+        
+        <div class="carrusel-slide">
+          <img src="/img/sauna.jpeg" alt="Imagen 5">
+          <p>"Un paraíso escondido en el corazón de Potosí."</p>
+        </div>
+        
+        <div class="carrusel-slide">
+          <img src="/img/sauna1.jpeg" alt="Imagen 6">
+          <p>"Las aguas termales tienen un efecto mágico en el cuerpo."</p>
+        </div>
+        
+        
+        <!-- Control siguiente -->
+        <button class="carrusel-control next">&#10095;</button>
+      </div>
+      
+      <!-- Indicadores -->
+      <div class="carrusel-indicadores">
+        <span class="indicador active" data-slide="0"></span>
+        <span class="indicador" data-slide="1"></span>
+        <span class="indicador" data-slide="2"></span>
+        <span class="indicador" data-slide="3"></span>
+        <span class="indicador" data-slide="4"></span>
+        <span class="indicador" data-slide="5"></span>
+      </div>
+      
+      <!-- Sección de modelos 3D interactivos -->
+      <div class="modelos-3d-container">
+        <h2 class="modelos-3d-title">EXPLORA NUESTRAS INSTALACIONES EN 3D</h2>
+        <div class="modelos-3d-grid">
+          <!-- Modelo 3D: Piscina Termal -->
+          <div class="modelo-3d-card">
+            <div class="modelo-3d-canvas" id="modelo-piscina">
+              <div class="modelo-tooltip" id="tooltip-piscina">
+                <span class="icon">👆</span>
+                <span>Haz clic para más información</span>
+              </div>
+            </div>
+            <div class="modelo-3d-info">
+              <h3>Piscinas Termales</h3>
+              <p>Disfruta de nuestras piscinas con aguas minerales naturales a temperatura ideal.</p>
+              <button class="modelo-3d-btn" data-model="piscina">Ver más</button>
+            </div>
+          </div>
+          
+          <!-- Modelo 3D: Sauna -->
+          <div class="modelo-3d-card">
+            <div class="modelo-3d-canvas" id="modelo-sauna">
+              <div class="modelo-tooltip" id="tooltip-sauna">
+                <span class="icon">👆</span>
+                <span>Haz clic para más información</span>
+              </div>
+            </div>
+            <div class="modelo-3d-info">
+              <h3>Saunas</h3>
+              <p>Experimenta los beneficios terapéuticos de nuestras saunas de alta calidad.</p>
+              <button class="modelo-3d-btn" data-model="sauna">Ver más</button>
+            </div>
+          </div>
+          
+          <!-- Modelo 3D: Baños Individuales -->
+          <div class="modelo-3d-card">
+            <div class="modelo-3d-canvas" id="modelo-banos">
+              <div class="modelo-tooltip" id="tooltip-banos">
+                <span class="icon">👆</span>
+                <span>Haz clic para más información</span>
+              </div>
+            </div>
+            <div class="modelo-3d-info">
+              <h3>Baños Individuales</h3>
+              <p>Privacidad y comodidad en nuestros baños termales individuales.</p>
+              <button class="modelo-3d-btn" data-model="banos">Ver más</button>
+            </div>
+          </div>
+          
+          <!-- Modelo 3D: Área de Descanso -->
+          <div class="modelo-3d-card">
+            <div class="modelo-3d-canvas" id="modelo-descanso">
+              <div class="modelo-tooltip" id="tooltip-descanso">
+                <span class="icon">👆</span>
+                <span>Haz clic para más información</span>
+              </div>
+            </div>
+            <div class="modelo-3d-info">
+              <h3>Áreas de Descanso</h3>
+              <p>Zonas tranquilas y confortables para relajarte después de los tratamientos.</p>
+              <button class="modelo-3d-btn" data-model="descanso">Ver más</button>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Botones para ver los panoramas 360° -->
+      <div class="panorama-buttons-container">
+        <button class="panorama-btn" data-panorama="/panom/panorama1.jpg">Vista General</button>
+        <button class="panorama-btn" data-panorama="/panom/panorama2.jpg">Vista de Fuera</button>
+        <button class="panorama-btn" data-panorama="/panom/panorama3.jpg">Vista desde el Exterior</button>
+      </div>
+    </main>
+  </div>
+
+  <!-- Botón Volver 3D -->
+  <a href="index.html?view=3d" class="volver-3d-btn" id="volver3dBtn">
+    <i class="fas fa-cube"></i>
+    <span>Volver Pagina Principal</span>
+  </a>
+
+  <!-- Modal para el panorama 360° -->
+  <div class="panorama-modal" id="panoramaModal">
+    <div class="panorama-content">
+      <div class="panorama-loading" id="panoramaLoading"></div>
+      <button class="panorama-close" id="panoramaClose">&times;</button>
+      <div id="panorama" style="width:100%; height:100%;"></div>
+    </div>
+  </div>
+  
+  <!-- Modal para información de modelos 3D -->
+  <div class="modelo-info-modal" id="modeloInfoModal">
+    <div class="modelo-info-content">
+      <button class="modelo-info-close" id="modeloInfoClose">&times;</button>
+      <h2 id="modeloInfoTitle">Título</h2>
+      <p id="modeloInfoDescription">Descripción</p>
+      <ul id="modeloInfoFeatures">
+        <li>Característica 1</li>
+        <li>Característica 2</li>
+        <li>Característica 3</li>
+      </ul>
+    </div>
+  </div>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      // Obtener elementos del carrusel
+      const slides = document.querySelectorAll('.carrusel-slide');
+      const indicadores = document.querySelectorAll('.indicador');
+      const botonPrev = document.querySelector('.carrusel-control.prev');
+      const botonNext = document.querySelector('.carrusel-control.next');
+      
+      // Elementos del panorama 360°
+      const panoramaButtons = document.querySelectorAll('.panorama-btn');
+      const panoramaModal = document.getElementById('panoramaModal');
+      const panoramaClose = document.getElementById('panoramaClose');
+      const panoramaLoading = document.getElementById('panoramaLoading');
+      
+      // Elementos para modelos 3D
+      const modeloInfoModal = document.getElementById('modeloInfoModal');
+      const modeloInfoClose = document.getElementById('modeloInfoClose');
+      const modeloInfoTitle = document.getElementById('modeloInfoTitle');
+      const modeloInfoDescription = document.getElementById('modeloInfoDescription');
+      const modeloInfoFeatures = document.getElementById('modeloInfoFeatures');
+      const modeloButtons = document.querySelectorAll('.modelo-3d-btn');
+      
+      // Botón Volver 3D
+      const volver3dBtn = document.getElementById('volver3dBtn');
+      
+      let slideActual = 0;
+      const intervaloTiempo = 5000; // 5 segundos
+      let intervalo;
+      let viewer; // Variable para guardar la instancia del visor
+      
+      // Función para mostrar un slide específico
+      function mostrarSlide(indice) {
+        // Ocultar todos los slides
+        slides.forEach(slide => slide.classList.remove('active'));
+        indicadores.forEach(ind => ind.classList.remove('active'));
+        
+        // Mostrar el slide actual
+        slides[indice].classList.add('active');
+        indicadores[indice].classList.add('active');
+        
+        slideActual = indice;
+      }
+      
+      // Función para avanzar al siguiente slide
+      function siguienteSlide() {
+        slideActual = (slideActual + 1) % slides.length;
+        mostrarSlide(slideActual);
+      }
+      
+      // Función para retroceder al slide anterior
+      function anteriorSlide() {
+        slideActual = (slideActual - 1 + slides.length) % slides.length;
+        mostrarSlide(slideActual);
+      }
+      
+      // Iniciar el carrusel automático
+      function iniciarCarrusel() {
+        intervalo = setInterval(siguienteSlide, intervaloTiempo);
+      }
+      
+      // Detener el carrusel automático
+      function detenerCarrusel() {
+        clearInterval(intervalo);
+      }
+      
+      // Event listeners para los botones de control
+      botonPrev.addEventListener('click', function() {
+        anteriorSlide();
+        detenerCarrusel();
+        iniciarCarrusel(); // Reiniciar el carrusel después de la interacción manual
+      });
+      
+      botonNext.addEventListener('click', function() {
+        siguienteSlide();
+        detenerCarrusel();
+        iniciarCarrusel(); // Reiniciar el carrusel después de la interacción manual
+      });
+      
+      // Event listeners para los indicadores
+      indicadores.forEach(indicador => {
+        indicador.addEventListener('click', function() {
+          const indice = parseInt(this.getAttribute('data-slide'));
+          mostrarSlide(indice);
+          detenerCarrusel();
+          iniciarCarrusel(); // Reiniciar el carrusel después de la interacción manual
+        });
+      });
+      
+      // Pausar el carrusel cuando el mouse está sobre él
+      const carruselContainer = document.querySelector('.carrusel-container');
+      carruselContainer.addEventListener('mouseenter', detenerCarrusel);
+      carruselContainer.addEventListener('mouseleave', iniciarCarrusel);
+      
+      // Iniciar el carrusel automático al cargar la página
+      iniciarCarrusel();
+      
+      // Funcionalidad del panorama 360°
+      panoramaButtons.forEach(button => {
+        button.addEventListener('click', function() {
+          const imagePath = this.getAttribute('data-panorama');
+          panoramaModal.style.display = 'flex';
+          panoramaLoading.style.display = 'block'; // Mostrar indicador de carga
+          
+          // Si ya existe un visor, lo destruimos
+          if (viewer) {
+            viewer.destroy();
+          }
+          
+          // Inicializar el visor 360° con la imagen correspondiente
+          viewer = pannellum.viewer('panorama', {
+            "type": "equirectangular",
+            "panorama": imagePath,
+            "autoLoad": true,
+            "autoRotate": -2,
+            "autoRotateInactivityDelay": 100,
+            "compass": false,
+            "showZoomCtrl": true,
+            "showFullscreenCtrl": true,
+            "hotSpotDebug": false
+          });
+          
+          // Ocultar indicador cuando se carga el panorama
+          viewer.on('load', function() {
+            panoramaLoading.style.display = 'none';
+          });
+        });
+      });
+      
+      // Cerrar el modal del panorama 360°
+      panoramaClose.addEventListener('click', function() {
+        panoramaModal.style.display = 'none';
+        if (viewer) {
+          viewer.destroy();
+          viewer = null;
+        }
+      });
+      
+      // Cerrar el modal al hacer clic fuera del contenido
+      window.addEventListener('click', function(event) {
+        if (event.target === panoramaModal) {
+          panoramaModal.style.display = 'none';
+          if (viewer) {
+            viewer.destroy();
+            viewer = null;
+          }
+        }
+      });
+      
+      // Funcionalidad para modelos 3D
+      // Información de los modelos
+      const modelosInfo = {
+        piscina: {
+          title: "Piscinas Termales",
+          description: "Nuestras piscinas termales son el corazón del balneario. Con aguas ricas en minerales como azufre, calcio y magnesio, ofrecen propiedades terapéuticas para diversas afecciones.",
+          features: [
+            "Temperatura constante de 36-38°C",
+            "Diferentes profundidades para todas las edades",
+            "Sistema de filtración y purificación continuo",
+            "Accesibilidad para personas con movilidad reducida",
+            "Vigilancia permanente de personal capacitado"
+          ]
+        },
+        sauna: {
+          title: "Saunas Terapéuticas",
+          description: "Nuestras saunas combinan técnicas tradicionales con tecnología moderna para ofrecer una experiencia de relajación y detoxificación incomparable.",
+          features: [
+            "Control preciso de temperatura y humedad",
+            "Maderas nobles de alta calidad",
+            "Iluminación cromoterapéutica",
+            "Sistema de ventilación eficiente",
+            "Vistas panorámicas al exterior"
+          ]
+        },
+        banos: {
+          title: "Baños Individuales",
+          description: "Espacios privados diseñados para ofrecer una experiencia íntima y personalizada con nuestras aguas termales.",
+          features: [
+            "Total privacidad y comodidad",
+            "Control individual de temperatura",
+            "Hidromasaje incorporado",
+            "Aromaterapia opcional",
+            "Productos de higiene de alta calidad"
+          ]
+        },
+        descanso: {
+          title: "Áreas de Descanso",
+          description: "Zones diseñadas para prolongar los beneficios de los tratamientos termales en un ambiente de tranquilidad y confort.",
+          features: [
+            "Camas reclinables ergonómicas",
+            "Zonas de sombra y sol",
+            "Servicio de bebidas saludables",
+            "Música ambiental relajante",
+            "Vistas panorámicas a los alrededores"
+          ]
+        }
+      };
+      
+      // Inicializar modelos 3D
+      initModelo3D('modelo-piscina', 'tooltip-piscina', crearPiscina3D);
+      initModelo3D('modelo-sauna', 'tooltip-sauna', crearSauna3D);
+      initModelo3D('modelo-banos', 'tooltip-banos', crearBanos3D);
+      initModelo3D('modelo-descanso', 'tooltip-descanso', crearDescanso3D);
+      
+      // Función para inicializar un modelo 3D
+      function initModelo3D(canvasId, tooltipId, createFunction) {
+        const canvas = document.getElementById(canvasId);
+        const tooltip = document.getElementById(tooltipId);
+        
+        // Crear el modelo 3D
+        const { scene, camera, renderer, controls } = createFunction(canvas);
+        
+        // Variables para interacción
+        let raycaster = new THREE.Raycaster();
+        let mouse = new THREE.Vector2();
+        let hoveredObject = null;
+        let originalMaterials = {};
+        
+        // Evento de mouse move
+        canvas.addEventListener('mousemove', function(event) {
+          const rect = canvas.getBoundingClientRect();
+          mouse.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
+          mouse.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
+          
+          // Actualizar raycaster
+          raycaster.setFromCamera(mouse, camera);
+          
+          // Calcular intersecciones
+          const intersects = raycaster.intersectObjects(scene.children, true);
+          
+          // Verificar si el mouse está sobre un objeto interactivo
+          let foundObject = false;
+          for (let i = 0; i < intersects.length; i++) {
+            const object = intersects[i].object;
+            if (object.userData.interactive) {
+              foundObject = true;
+              
+              // Si es un objeto diferente al anteriormente seleccionado
+              if (hoveredObject !== object) {
+                // Restaurar el material del objeto anterior
+                if (hoveredObject) {
+                  hoveredObject.material = originalMaterials[hoveredObject.uuid];
+                  delete originalMaterials[hoveredObject.uuid];
+                }
+                
+                // Guardar el material original y crear un nuevo material con brillo
+                originalMaterials[object.uuid] = object.material;
+                object.material = object.material.clone();
+                object.material.emissive = new THREE.Color(0x00ffff);
+                object.material.emissiveIntensity = 0.3;
+                
+                hoveredObject = object;
+              }
+              
+              // Mostrar el tooltip
+              tooltip.classList.add('visible');
+              
+              // Posicionar el tooltip
+              tooltip.style.left = `${event.clientX - rect.left + 10}px`;
+              tooltip.style.top = `${event.clientY - rect.top - 30}px`;
+              
+              break;
+            }
+          }
+          
+          // Si no se encontró ningún objeto, ocultar el tooltip y restaurar materiales
+          if (!foundObject && hoveredObject) {
+            hoveredObject.material = originalMaterials[hoveredObject.uuid];
+            delete originalMaterials[hoveredObject.uuid];
+            hoveredObject = null;
+            tooltip.classList.remove('visible');
+          }
+        });
+        
+        // Evento de click
+        canvas.addEventListener('click', function(event) {
+          const rect = canvas.getBoundingClientRect();
+          mouse.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
+          mouse.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
+          
+          // Actualizar raycaster
+          raycaster.setFromCamera(mouse, camera);
+          
+          // Calcular intersecciones
+          const intersects = raycaster.intersectObjects(scene.children, true);
+          
+          // Verificar si se hizo clic en un objeto interactivo
+          for (let i = 0; i < intersects.length; i++) {
+            const object = intersects[i].object;
+            if (object.userData.interactive) {
+              const modelType = object.userData.modelType;
+              showModeloInfo(modelType);
+              break;
+            }
+          }
+        });
+        
+        // Animación
+        function animate() {
+          requestAnimationFrame(animate);
+          controls.update();
+          renderer.render(scene, camera);
+        }
+        animate();
+      }
+      
+      // Función para crear el modelo 3D de la piscina
+      function crearPiscina3D(canvas) {
+        // Crear escena
+        const scene = new THREE.Scene();
+        scene.background = new THREE.Color(0x87CEEB);
+        
+        // Crear cámara
+        const camera = new THREE.PerspectiveCamera(75, canvas.clientWidth / canvas.clientHeight, 0.1, 1000);
+        camera.position.set(8, 8, 8);
+        
+        // Crear renderer
+        const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+        renderer.setSize(canvas.clientWidth, canvas.clientHeight);
+        renderer.shadowMap.enabled = true;
+        canvas.appendChild(renderer.domElement);
+        
+        // Controles
+        const controls = new THREE.OrbitControls(camera, renderer.domElement);
+        controls.enableDamping = true;
+        controls.dampingFactor = 0.05;
+        controls.autoRotate = true;
+        controls.autoRotateSpeed = 1;
+        
+        // Iluminación mejorada
+        const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
+        scene.add(ambientLight);
+        
+        const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
+        directionalLight.position.set(10, 20, 15);
+        directionalLight.castShadow = true;
+        directionalLight.shadow.mapSize.width = 2048;
+        directionalLight.shadow.mapSize.height = 2048;
+        scene.add(directionalLight);
+        
+        // Suelo de terraza
+        const sueloGeometry = new THREE.BoxGeometry(12, 0.3, 10);
+        const sueloMaterial = new THREE.MeshPhongMaterial({ color: 0xE0E0E0 });
+        const suelo = new THREE.Mesh(sueloGeometry, sueloMaterial);
+        suelo.position.y = -0.6;
+        suelo.receiveShadow = true;
+        scene.add(suelo);
+        
+        // Crear estructura de la piscina
+        const crearPiscina = () => {
+          const piscinaGrupo = new THREE.Group();
+          
+          // Fondo de la piscina
+          const fondoGeometry = new THREE.BoxGeometry(4.2, 0.2, 3.2);
+          const fondoMaterial = new THREE.MeshPhongMaterial({ color: 0x1E90FF });
+          const fondo = new THREE.Mesh(fondoGeometry, fondoMaterial);
+          fondo.position.y = -1.5;
+          fondo.receiveShadow = true;
+          piscinaGrupo.add(fondo);
+          
+          // Paredes de la piscina
+          const paredMaterial = new THREE.MeshPhongMaterial({ color: 0x4682B4 });
+          
+          // Paredes largas
+          const paredLargaGeometry = new THREE.BoxGeometry(4.2, 1.5, 0.2);
+          const paredLarga1 = new THREE.Mesh(paredLargaGeometry, paredMaterial);
+          paredLarga1.position.set(0, -0.75, 1.5);
+          piscinaGrupo.add(paredLarga1);
+          
+          const paredLarga2 = new THREE.Mesh(paredLargaGeometry, paredMaterial);
+          paredLarga2.position.set(0, -0.75, -1.5);
+          piscinaGrupo.add(paredLarga2);
+          
+          // Paredes cortas
+          const paredCortaGeometry = new THREE.BoxGeometry(0.2, 1.5, 3.2);
+          const paredCorta1 = new THREE.Mesh(paredCortaGeometry, paredMaterial);
+          paredCorta1.position.set(2.1, -0.75, 0);
+          piscinaGrupo.add(paredCorta1);
+          
+          const paredCorta2 = new THREE.Mesh(paredCortaGeometry, paredMaterial);
+          paredCorta2.position.set(-2.1, -0.75, 0);
+          piscinaGrupo.add(paredCorta2);
+          
+          // Borde de la piscina
+          const bordeGeometry = new THREE.BoxGeometry(4.6, 0, 3.6);
+          const bordeMaterial = new THREE.MeshPhongMaterial({ color: 0x000000 });
+          const borde = new THREE.Mesh(bordeGeometry, bordeMaterial);
+          borde.position.y = -0.15;
+          borde.castShadow = true;
+          piscinaGrupo.add(borde);
+          
+          return piscinaGrupo;
+        };
+        
+        // Crear agua con animación
+        const crearAgua = () => {
+          const aguaGeometry = new THREE.PlaneGeometry(4, 3);
+          const aguaMaterial = new THREE.MeshPhongMaterial({ 
+            color: 0x00BFFF,
+            transparent: true,
+            opacity: 0.6,
+            shininess: 100,
+            side: THREE.DoubleSide
+          });
+          const agua = new THREE.Mesh(aguaGeometry, aguaMaterial);
+          agua.rotation.x = -Math.PI / 2;
+          agua.position.y = -0.01;
+          
+          // Animación del agua
+          const animarAgua = () => {
+            agua.material.opacity = 0.6 + Math.sin(Date.now() * 0.001) * 0.05;
+            agua.position.y = -0.01 + Math.sin(Date.now() * 0.002) * 0.02;
+          };
+          
+          return { agua, animarAgua };
+        };
+        
+        // Crear barandilla completa
+        const crearBarandilla = () => {
+          const barandillaGrupo = new THREE.Group();
+          const material = new THREE.MeshPhongMaterial({ color: 0xC0C0C0 });
+          
+          // Postes verticales
+          const posteGeometry = new THREE.CylinderGeometry(0.03, 0.03, 1.2, 8);
+          const posicionesPostes = [
+            { x: -0.6, z: -0.3 },
+            { x: 0.6, z: -0.3 },
+            { x: -0.6, z: 0.3 },
+            { x: 0.6, z: 0.3 }
+          ];
+          
+          posicionesPostes.forEach(pos => {
+            const poste = new THREE.Mesh(posteGeometry, material);
+            poste.position.set(pos.x, 1.1, pos.z);
+            poste.castShadow = true;
+            barandillaGrupo.add(poste);
+          });
+          
+          // Barra horizontal superior
+          const barraGeometry = new THREE.CylinderGeometry(0.03, 0.03, 1.2, 8);
+          const barraSuperior = new THREE.Mesh(barraGeometry, material);
+          barraSuperior.rotation.z = Math.PI / 2;
+          barraSuperior.position.set(0, 1.1, 0);
+          barraSuperior.castShadow = true;
+          barandillaGrupo.add(barraSuperior);
+          
+          // Barras horizontales intermedias
+          const barraIntermediaGeometry = new THREE.CylinderGeometry(0.02, 0.02, 1.2, 8);
+          for (let i = 0; i < 2; i++) {
+            const barra = new THREE.Mesh(barraIntermediaGeometry, material);
+            barra.rotation.z = Math.PI / 2;
+            barra.position.set(0, 0.7 - i * 0.3, 0);
+            barra.castShadow = true;
+            barandillaGrupo.add(barra);
+          }
+          
+          // Barra vertical central
+          const barraVerticalGeometry = new THREE.CylinderGeometry(0.02, 0.02, 1.2, 8);
+          const barraVertical = new THREE.Mesh(barraVerticalGeometry, material);
+          barraVertical.position.set(0, 0.5, 0);
+          barraVertical.castShadow = true;
+          barandillaGrupo.add(barraVertical);
+          
+          return barandillaGrupo;
+        };
+        
+        // Crear trampolín completo
+        const crearTrampolin = (x, z, rotacion) => {
+          const trampolinGrupo = new THREE.Group();
+          
+          // Base del trampolín
+          const baseGeometry = new THREE.BoxGeometry(1.5, 0.2, 0.8);
+          const baseMaterial = new THREE.MeshPhongMaterial({ color: 0x4682B4 });
+          const base = new THREE.Mesh(baseGeometry, baseMaterial);
+          base.position.y = 0.5;
+          base.castShadow = true;
+          trampolinGrupo.add(base);
+          
+          // Agregar barandilla
+          const barandilla = crearBarandilla();
+          trampolinGrupo.add(barandilla);
+          
+          // Escalera
+          const escalonGeometry = new THREE.BoxGeometry(0.3, 0.05, 0.8);
+          const escalonMaterial = new THREE.MeshPhongMaterial({ color: 0x808080 });
+          
+          for (let i = 0; i < 3; i++) {
+            const escalon = new THREE.Mesh(escalonGeometry, escalonMaterial);
+            escalon.position.set(0.9, 0.1 + i * 0.2, 0);
+            escalon.castShadow = true;
+            trampolinGrupo.add(escalon);
+          }
+          
+          trampolinGrupo.position.set(x, 0, z);
+          trampolinGrupo.rotation.y = rotacion;
+          trampolinGrupo.userData = { interactive: true, modelType: 'trampolin' };
+          
+          return trampolinGrupo;
+        };
+        
+        // Crear escalera para piscina
+        const crearEscalera = (x, z, rotacion) => {
+          const escaleraGrupo = new THREE.Group();
+          
+          // Escalones
+          const escalonGeometry = new THREE.BoxGeometry(0.8, 0.05, 0.3);
+          const escalonMaterial = new THREE.MeshPhongMaterial({ color: 0x808080 });
+          
+          for (let i = 0; i < 4; i++) {
+            const escalon = new THREE.Mesh(escalonGeometry, escalonMaterial);
+            escalon.position.set(0, -0.3 - i * 0.15, 0.3 + i * 0.15);
+            escalon.castShadow = true;
+            escaleraGrupo.add(escalon);
+          }
+          
+          return escaleraGrupo;
+        };
+        
+        // Agregar elementos a la escena
+        const piscina = crearPiscina();
+        scene.add(piscina);
+        
+        const { agua, animarAgua } = crearAgua();
+        scene.add(agua);
+        
+        // Agregar trampolines
+        const trampolin1 = crearTrampolin(3, 0, Math.PI / 2);
+        scene.add(trampolin1);
+        
+        const trampolin2 = crearTrampolin(-3, 0, -Math.PI / 2);
+        scene.add(trampolin2);
+        
+        const trampolin3 = crearTrampolin(0, 2.5, Math.PI);
+        scene.add(trampolin3);
+        
+        // Agregar escaleras
+        const escalera1 = crearEscalera(1.8, 1.8, Math.PI / 4);
+        scene.add(escalera1);
+        
+        const escalera2 = crearEscalera(-1.8, -1.8, -3 * Math.PI / 4);
+        scene.add(escalera2);
+        
+        // Función de animación
+        function animate() {
+          requestAnimationFrame(animate);
+          controls.update();
+          animarAgua();
+          renderer.render(scene, camera);
+        }
+        
+        animate();
+        
+        return { scene, camera, renderer, controls };
+      }
+      
+      // Función para crear el modelo 3D de la sauna
+      function crearSauna3D(canvas) {
+        // Crear escena
+        const scene = new THREE.Scene();
+        scene.background = new THREE.Color(0x2C1810);
+        
+        // Crear cámara
+        const camera = new THREE.PerspectiveCamera(75, canvas.clientWidth / canvas.clientHeight, 0.1, 1000);
+        camera.position.set(6, 4, 6);
+        camera.lookAt(0, 0, 0);
+        
+        // Crear renderer
+        const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+        renderer.setSize(canvas.clientWidth, canvas.clientHeight);
+        renderer.shadowMap.enabled = true;
+        renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+        canvas.appendChild(renderer.domElement);
+        
+        // Controles
+        const controls = new THREE.OrbitControls(camera, renderer.domElement);
+        controls.enableDamping = true;
+        controls.dampingFactor = 0.05;
+        controls.autoRotate = true;
+        controls.autoRotateSpeed = 1;
+        
+        // Iluminación ambiental
+        const ambientLight = new THREE.AmbientLight(0x8B4513, 0.4);
+        scene.add(ambientLight);
+        
+        // Iluminación exterior
+        const exteriorLight = new THREE.DirectionalLight(0xFFD700, 0.6);
+        exteriorLight.position.set(5, 10, 7);
+        exteriorLight.castShadow = true;
+        exteriorLight.shadow.mapSize.width = 1024;
+        exteriorLight.shadow.mapSize.height = 1024;
+        scene.add(exteriorLight);
+        
+        // Iluminación interior de sauna (luz cálida)
+        const interiorLight = new THREE.PointLight(0xFF4500, 1, 10);
+        interiorLight.position.set(0, 1, 0);
+        interiorLight.castShadow = true;
+        scene.add(interiorLight);
+        
+        // Grupo para la sauna
+        const saunaGroup = new THREE.Group();
+        
+        // Material de madera para la sauna
+        const maderaMaterial = new THREE.MeshPhongMaterial({ 
+          color: 0x8B4513,
+          shininess: 30,
+          specular: 0x111111
+        });
+        
+        // Material de madera oscura para detalles
+        const maderaOscuraMaterial = new THREE.MeshPhongMaterial({ 
+          color: 0x654321,
+          shininess: 20
+        });
+        
+        // Suelo de la sauna
+        const sueloGeometry = new THREE.BoxGeometry(4, 0.2, 3);
+        const suelo = new THREE.Mesh(sueloGeometry, maderaMaterial);
+        suelo.position.y = -1.5;
+        suelo.receiveShadow = true;
+        saunaGroup.add(suelo);
+        
+        // Paredes de la sauna
+        // Pared trasera
+        const paredTraseraGeometry = new THREE.BoxGeometry(4, 3, 0.2);
+        const paredTrasera = new THREE.Mesh(paredTraseraGeometry, maderaMaterial);
+        paredTrasera.position.set(0, 0, -1.4);
+        paredTrasera.receiveShadow = true;
+        saunaGroup.add(paredTrasera);
+        
+        // Paredes laterales
+        const paredLateralGeometry = new THREE.BoxGeometry(0.2, 3, 3);
+        const paredIzquierda = new THREE.Mesh(paredLateralGeometry, maderaMaterial);
+        paredIzquierda.position.set(-1.9, 0, 0);
+        paredIzquierda.receiveShadow = true;
+        saunaGroup.add(paredIzquierda);
+        
+        const paredDerecha = new THREE.Mesh(paredLateralGeometry, maderaMaterial);
+        paredDerecha.position.set(1.9, 0, 0);
+        paredDerecha.receiveShadow = true;
+        saunaGroup.add(paredDerecha);
+        
+        // Techo de la sauna
+        const techoGeometry = new THREE.BoxGeometry(4, 0.2, 3);
+        const techo = new THREE.Mesh(techoGeometry, maderaMaterial);
+        techo.position.y = 1.5;
+        techo.receiveShadow = true;
+        saunaGroup.add(techo);
+        
+        // Bancos de la sauna (en dos niveles)
+        const crearBanco = (ancho, alto, fondo, yPos) => {
+          const bancoGeometry = new THREE.BoxGeometry(ancho, alto, fondo);
+          const banco = new THREE.Mesh(bancoGeometry, maderaOscuraMaterial);
+          banco.position.set(0, yPos, -0.8);
+          banco.castShadow = true;
+          banco.receiveShadow = true;
+          return banco;
+        };
+        
+        // Banco inferior
+        const bancoInferior = crearBanco(3.5, 0.2, 0.6, -1.3);
+        saunaGroup.add(bancoInferior);
+        
+        // Banco superior
+        const bancoSuperior = crearBanco(3.5, 0.2, 0.6, -0.8);
+        saunaGroup.add(bancoSuperior);
+        
+        // Soportes de los bancos
+        const crearSoporte = (xPos, zPos, altura) => {
+          const soporteGeometry = new THREE.BoxGeometry(0.1, altura, 0.1);
+          const soporte = new THREE.Mesh(soporteGeometry, maderaOscuraMaterial);
+          soporte.position.set(xPos, -1.4 + altura/2, zPos);
+          soporte.castShadow = true;
+          return soporte;
+        };
+        
+        // Soportes para banco inferior
+        for (let i = -1.5; i <= 1.5; i += 1.5) {
+          const soporte1 = crearSoporte(i, -1.1, 0.2);
+          saunaGroup.add(soporte1);
+        }
+        
+        // Soportes para banco superior
+        for (let i = -1.5; i <= 1.5; i += 1.5) {
+          const soporte2 = crearSoporte(i, -0.5, 0.7);
+          saunaGroup.add(soporte2);
+        }
+        
+        // Estufa de sauna
+        const estufaGroup = new THREE.Group();
+        
+        // Cuerpo de la estufa
+        const estufaGeometry = new THREE.BoxGeometry(0.8, 1, 0.6);
+        const estufaMaterial = new THREE.MeshPhongMaterial({ 
+          color: 0x2C2C2C,
+          metalness: 0.8,
+          roughness: 0.2
+        });
+        const estufa = new THREE.Mesh(estufaGeometry, estufaMaterial);
+        estufa.position.set(0, -1, 1);
+        estufa.castShadow = true;
+        estufaGroup.add(estufa);
+        
+        // Piedras sobre la estufa
+        const piedraGeometry = new THREE.SphereGeometry(0.1, 8, 8);
+        const piedraMaterial = new THREE.MeshPhongMaterial({ 
+          color: 0x808080,
+          roughness: 0.9
+        });
+        
+        for (let i = 0; i < 15; i++) {
+          const piedra = new THREE.Mesh(piedraGeometry, piedraMaterial);
+          piedra.position.set(
+            (Math.random() - 0.5) * 0.6,
+            -0.4 + Math.random() * 0.2,
+            1 + (Math.random() - 0.5) * 0.4
+          );
+          piedra.castShadow = true;
+          estufaGroup.add(piedra);
+        }
+        
+        saunaGroup.add(estufaGroup);
+        
+        // Puerta de la sauna
+        const puertaGroup = new THREE.Group();
+        
+        // Hoja de la puerta
+        const puertaGeometry = new THREE.BoxGeometry(1.5, 2, 0.1);
+        const puertaMaterial = new THREE.MeshPhongMaterial({ 
+          color: 0x654321,
+          shininess: 40
+        });
+        const puerta = new THREE.Mesh(puertaGeometry, puertaMaterial);
+        puerta.position.set(0, 0, 1.45);
+        puerta.castShadow = true;
+        puertaGroup.add(puerta);
+        
+        // Marco de la puerta
+        const marcoPuertaGeometry = new THREE.BoxGeometry(1.7, 2.2, 0.05);
+        const marcoPuerta = new THREE.Mesh(marcoPuertaGeometry, maderaOscuraMaterial);
+        marcoPuerta.position.set(0, 0, 1.48);
+        puertaGroup.add(marcoPuerta);
+        
+        // Manija de la puerta
+        const manijaGeometry = new THREE.CylinderGeometry(0.05, 0.05, 0.2, 8);
+        const manijaMaterial = new THREE.MeshPhongMaterial({ 
+          color: 0xC0C0C0,
+          metalness: 0.9,
+          roughness: 0.1
+        });
+        const manija = new THREE.Mesh(manijaGeometry, manijaMaterial);
+        manija.rotation.z = Math.PI / 2;
+        manija.position.set(0.6, 0, 1.5);
+        puertaGroup.add(manija);
+        
+        // Bisagras de la puerta
+        const bisagraGeometry = new THREE.CylinderGeometry(0.03, 0.03, 0.15, 8);
+        const bisagraMaterial = new THREE.MeshPhongMaterial({ 
+          color: 0xC0C0C0,
+          metalness: 0.9
+        });
+        
+        const bisagra1 = new THREE.Mesh(bisagraGeometry, bisagraMaterial);
+        bisagra1.position.set(-0.7, 0.8, 1.45);
+        puertaGroup.add(bisagra1);
+        
+        const bisagra2 = new THREE.Mesh(bisagraGeometry, bisagraMaterial);
+        bisagra2.position.set(-0.7, -0.8, 1.45);
+        puertaGroup.add(bisagra2);
+        
+        saunaGroup.add(puertaGroup);
+        
+        // Efecto de vapor/calor (partículas animadas)
+        const particleCount = 200;
+        const particles = new THREE.BufferGeometry();
+        const posArray = new Float32Array(particleCount * 3);
+        const velArray = new Float32Array(particleCount * 3);
+        
+        for (let i = 0; i < particleCount * 3; i += 3) {
+          posArray[i] = (Math.random() - 0.5) * 3; // x
+          posArray[i + 1] = Math.random() * 2 - 1.5; // y
+          posArray[i + 2] = (Math.random() - 0.5) * 2.5; // z
+          
+          // Velocidades iniciales
+          velArray[i] = (Math.random() - 0.5) * 0.01; // vx
+          velArray[i + 1] = Math.random() * 0.02 + 0.01; // vy (hacia arriba)
+          velArray[i + 2] = (Math.random() - 0.5) * 0.01; // vz
+        }
+        
+        particles.setAttribute('position', new THREE.BufferAttribute(posArray, 3));
+        particles.setAttribute('velocity', new THREE.BufferAttribute(velArray, 3));
+        
+        const particleMaterial = new THREE.PointsMaterial({
+          color: 0xFF6347,
+          size: 0.05,
+          transparent: true,
+          opacity: 0.7,
+          blending: THREE.AdditiveBlending
+        });
+        
+        const particleMesh = new THREE.Points(particles, particleMaterial);
+        saunaGroup.add(particleMesh);
+        
+        // Añadir la sauna a la escena
+        saunaGroup.userData = { interactive: true, modelType: 'sauna' };
+        scene.add(saunaGroup);
+        
+        // Animación de partículas
+        function animarParticulas() {
+          const positions = particles.attributes.position.array;
+          const velocities = particles.attributes.velocity.array;
+          
+          for (let i = 0; i < particleCount * 3; i += 3) {
+            // Actualizar posición
+            positions[i] += velocities[i]; // x
+            positions[i + 1] += velocities[i + 1]; // y
+            positions[i + 2] += velocities[i + 2]; // z
+            
+            // Si la partícula sale por arriba, reiniciarla abajo
+            if (positions[i + 1] > 1.5) {
+              positions[i + 1] = -1.5;
+              positions[i] = (Math.random() - 0.5) * 3;
+              positions[i + 2] = (Math.random() - 0.5) * 2.5;
+            }
+            
+            // Añadir un poco de movimiento aleatorio
+            velocities[i] += (Math.random() - 0.5) * 0.001;
+            velocities[i + 2] += (Math.random() - 0.5) * 0.001;
+          }
+          
+          particles.attributes.position.needsUpdate = true;
+        }
+        
+        // Función de animación
+        function animate() {
+          requestAnimationFrame(animate);
+          controls.update();
+          animarParticulas();
+          renderer.render(scene, camera);
+        }
+        
+        animate();
+        
+        return { scene, camera, renderer, controls };
+      }
+      
+      // Función para crear el modelo 3D de los baños individuales
+      function crearBanos3D(canvas) {
+        // Crear escena
+        const scene = new THREE.Scene();
+        scene.background = new THREE.Color(0xF5F5F5);
+        
+        // Crear cámara
+        const camera = new THREE.PerspectiveCamera(75, canvas.clientWidth / canvas.clientHeight, 0.1, 1000);
+        camera.position.set(6, 4, 6);
+        camera.lookAt(0, 0, 0);
+        
+        // Crear renderer
+        const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+        renderer.setSize(canvas.clientWidth, canvas.clientHeight);
+        renderer.shadowMap.enabled = true;
+        renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+        canvas.appendChild(renderer.domElement);
+        
+        // Controles
+        const controls = new THREE.OrbitControls(camera, renderer.domElement);
+        controls.enableDamping = true;
+        controls.dampingFactor = 0.05;
+        controls.autoRotate = true;
+        controls.autoRotateSpeed = 1;
+        
+        // Iluminación ambiental
+        const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
+        scene.add(ambientLight);
+        
+        // Iluminación principal
+        const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
+        directionalLight.position.set(5, 10, 7);
+        directionalLight.castShadow = true;
+        directionalLight.shadow.mapSize.width = 1024;
+        directionalLight.shadow.mapSize.height = 1024;
+        scene.add(directionalLight);
+        
+        // Luz cálida para ambiente de baño
+        const warmLight = new THREE.PointLight(0xFFD700, 0.5, 10);
+        warmLight.position.set(0, 2, 0);
+        warmLight.castShadow = true;
+        scene.add(warmLight);
+        
+        // Grupo para el baño
+        const banosGroup = new THREE.Group();
+        
+        // Materiales
+        const paredMaterial = new THREE.MeshPhongMaterial({ 
+          color: 0xFFFFFF,
+          shininess: 30
+        });
+        
+        const sueloMaterial = new THREE.MeshPhongMaterial({ 
+          color: 0xE0E0E0,
+          shininess: 10
+        });
+        
+        const techoMaterial = new THREE.MeshPhongMaterial({ 
+          color: 0xF0F0F0,
+          shininess: 20
+        });
+        
+        const metalMaterial = new THREE.MeshPhongMaterial({ 
+          color: 0xC0C0C0,
+          metalness: 0.8,
+          roughness: 0.2
+        });
+        
+        const aguaMaterial = new THREE.MeshPhongMaterial({ 
+          color: 0x00BFFF,
+          transparent: true,
+          opacity: 0.7,
+          shininess: 100,
+          reflectivity: 0.9
+        });
+        
+        // Suelo del baño
+        const sueloGeometry = new THREE.BoxGeometry(3, 0.2, 3);
+        const suelo = new THREE.Mesh(sueloGeometry, sueloMaterial);
+        suelo.position.y = -1.5;
+        suelo.receiveShadow = true;
+        banosGroup.add(suelo);
+        
+        // Paredes del baño
+        // Pared trasera
+        const paredTraseraGeometry = new THREE.BoxGeometry(3, 3, 0.2);
+        const paredTrasera = new THREE.Mesh(paredTraseraGeometry, paredMaterial);
+        paredTrasera.position.set(0, 0, -1.4);
+        paredTrasera.receiveShadow = true;
+        banosGroup.add(paredTrasera);
+        
+        // Paredes laterales
+        const paredLateralGeometry = new THREE.BoxGeometry(0.2, 3, 3);
+        const paredIzquierda = new THREE.Mesh(paredLateralGeometry, paredMaterial);
+        paredIzquierda.position.set(-1.4, 0, 0);
+        paredIzquierda.receiveShadow = true;
+        banosGroup.add(paredIzquierda);
+        
+        const paredDerecha = new THREE.Mesh(paredLateralGeometry, paredMaterial);
+        paredDerecha.position.set(1.4, 0, 0);
+        paredDerecha.receiveShadow = true;
+        banosGroup.add(paredDerecha);
+        
+        // Techo del baño
+        const techoGeometry = new THREE.BoxGeometry(3, 0.2, 3);
+        const techo = new THREE.Mesh(techoGeometry, techoMaterial);
+        techo.position.y = 1.5;
+        techo.receiveShadow = true;
+        banosGroup.add(techo);
+        
+        // Bañera
+        const baneraGroup = new THREE.Group();
+        
+        // Cuerpo de la bañera
+        const baneraForma = new THREE.Shape();
+        baneraForma.moveTo(-1, -0.5);
+        baneraForma.lineTo(1, -0.5);
+        baneraForma.lineTo(0.9, 0.5);
+        baneraForma.lineTo(-0.9, 0.5);
+        baneraForma.lineTo(-1, -0.5);
+        
+        const extrudeSettings = {
+          depth: 1.3,
+          bevelEnabled: true,
+          bevelThickness: 0.1,
+          bevelSize: 0.1,
+          bevelSegments: 3
+        };
+        
+        const baneraGeometry = new THREE.ExtrudeGeometry(baneraForma, extrudeSettings);
+        const baneraMaterial = new THREE.MeshPhongMaterial({ 
+          color: 0xFFFFFF,
+          shininess: 90
+        });
+        const banera = new THREE.Mesh(baneraGeometry, baneraMaterial);
+        banera.position.set(0, -1, 0);
+        banera.rotation.y = Math.PI / 2;
+        banera.castShadow = true;
+        banera.receiveShadow = true;
+        baneraGroup.add(banera);
+        
+        // Agua en la bañera
+        const aguaForma = new THREE.Shape();
+        aguaForma.moveTo(-0.85, -0.35);
+        aguaForma.lineTo(0.85, -0.35);
+        aguaForma.lineTo(0.75, 0.35);
+        aguaForma.lineTo(-0.75, 0.35);
+        aguaForma.lineTo(-0.85, -0.35);
+        
+        const aguaExtrudeSettings = {
+          depth: 1.1,
+          bevelEnabled: false
+        };
+        
+        const aguaGeometry = new THREE.ExtrudeGeometry(aguaForma, aguaExtrudeSettings);
+        const agua = new THREE.Mesh(aguaGeometry, aguaMaterial);
+        agua.position.set(0, -0.6, 0);
+        agua.rotation.y = Math.PI / 2;
+        baneraGroup.add(agua);
+        
+        // Grifos de la bañera
+        const crearGrifo = (x, y, z) => {
+          const grifoGroup = new THREE.Group();
+          
+          // Base del grifo
+          const baseGeometry = new THREE.CylinderGeometry(0.08, 0.08, 0.1, 16);
+          const base = new THREE.Mesh(baseGeometry, metalMaterial);
+          base.position.set(x, y, z);
+          grifoGroup.add(base);
+          
+          // Cuerpo del grifo
+          const cuerpoGeometry = new THREE.CylinderGeometry(0.05, 0.05, 0.3, 16);
+          const cuerpo = new THREE.Mesh(cuerpoGeometry, metalMaterial);
+          cuerpo.position.set(x, y + 0.2, z);
+          cuerpo.rotation.z = Math.PI / 6;
+          grifoGroup.add(cuerpo);
+          
+          // Pico del grifo
+          const picoGeometry = new THREE.CylinderGeometry(0.03, 0.03, 0.2, 16);
+          const pico = new THREE.Mesh(picoGeometry, metalMaterial);
+          pico.position.set(x + 0.15, y + 0.25, z);
+          pico.rotation.z = Math.PI / 3;
+          grifoGroup.add(pico);
+          
+          // Manija del grifo
+          const manijaGeometry = new THREE.BoxGeometry(0.1, 0.05, 0.05);
+          const manija = new THREE.Mesh(manijaGeometry, metalMaterial);
+          manija.position.set(x, y + 0.2, z + 0.05);
+          manija.rotation.y = Math.PI / 4;
+          grifoGroup.add(manija);
+          
+          return grifoGroup;
+        };
+        
+        // Agregar grifos
+        const grifoCaliente = crearGrifo(0.8, -0.5, 0.6);
+        baneraGroup.add(grifoCaliente);
+        
+        const grifoFrio = crearGrifo(0.8, -0.5, 0.4);
+        baneraGroup.add(grifoFrio);
+        
+        // Desagüe
+        const desagueGeometry = new THREE.CylinderGeometry(0.05, 0.05, 0.05, 16);
+        const desague = new THREE.Mesh(desagueGeometry, metalMaterial);
+        desague.position.set(0, -0.9, 0);
+        baneraGroup.add(desague);
+        
+        banosGroup.add(baneraGroup);
+        
+        // Puerta del baño
+        const puertaGroup = new THREE.Group();
+        
+        // Hoja de la puerta
+        const puertaGeometry = new THREE.BoxGeometry(1.2, 2, 0.08);
+        const puertaMaterial = new THREE.MeshPhongMaterial({ 
+          color: 0x4682B4,
+          shininess: 40
+        });
+        const puerta = new THREE.Mesh(puertaGeometry, puertaMaterial);
+        puerta.position.set(0, 0, 1.46);
+        puerta.castShadow = true;
+        puertaGroup.add(puerta);
+        
+        // Marco de la puerta
+        const marcoPuertaGeometry = new THREE.BoxGeometry(1.3, 2.1, 0.05);
+        const marcoPuerta = new THREE.Mesh(marcoPuertaGeometry, metalMaterial);
+        marcoPuerta.position.set(0, 0, 1.48);
+        puertaGroup.add(marcoPuerta);
+        
+        // Manija de la puerta
+        const manijaGeometry = new THREE.CylinderGeometry(0.04, 0.04, 0.15, 8);
+        const manija = new THREE.Mesh(manijaGeometry, metalMaterial);
+        manija.rotation.z = Math.PI / 2;
+        manija.position.set(0.5, 0, 1.5);
+        puertaGroup.add(manija);
+        
+        // Bisagras de la puerta
+        const bisagraGeometry = new THREE.CylinderGeometry(0.03, 0.03, 0.12, 8);
+        
+        const bisagra1 = new THREE.Mesh(bisagraGeometry, metalMaterial);
+        bisagra1.position.set(-0.55, 0.8, 1.46);
+        puertaGroup.add(bisagra1);
+        
+        const bisagra2 = new THREE.Mesh(bisagraGeometry, metalMaterial);
+        bisagra2.position.set(-0.55, -0.8, 1.46);
+        puertaGroup.add(bisagra2);
+        
+        banosGroup.add(puertaGroup);
+        
+        // Accesorios del baño
+        // Toallero
+        const toalleroGroup = new THREE.Group();
+        
+        // Barra del toallero
+        const barraGeometry = new THREE.CylinderGeometry(0.02, 0.02, 0.8, 8);
+        const barra = new THREE.Mesh(barraGeometry, metalMaterial);
+        barra.rotation.z = Math.PI / 2;
+        barra.position.set(0, -0.5, -1.3);
+        toalleroGroup.add(barra);
+        
+        // Soportes del toallero
+        const soporteGeometry = new THREE.CylinderGeometry(0.03, 0.03, 0.1, 8);
+        
+        const soporte1 = new THREE.Mesh(soporteGeometry, metalMaterial);
+        soporte1.position.set(-0.4, -0.5, -1.3);
+        toalleroGroup.add(soporte1);
+        
+        const soporte2 = new THREE.Mesh(soporteGeometry, metalMaterial);
+        soporte2.position.set(0.4, -0.5, -1.3);
+        toalleroGroup.add(soporte2);
+        
+        // Toalla
+        const toallaGeometry = new THREE.BoxGeometry(0.7, 0.02, 0.4);
+        const toallaMaterial = new THREE.MeshPhongMaterial({ 
+          color: 0xF0F8FF,
+          side: THREE.DoubleSide
+        });
+        const toalla = new THREE.Mesh(toallaGeometry, toallaMaterial);
+        toalla.position.set(0, -0.4, -1.3);
+        toalleroGroup.add(toalla);
+        
+        banosGroup.add(toalleroGroup);
+        
+        // Jabonera
+        const jaboneraGroup = new THREE.Group();
+        
+        // Base de la jabonera
+        const jaboneraBaseGeometry = new THREE.BoxGeometry(0.2, 0.05, 0.15);
+        const jaboneraBase = new THREE.Mesh(jaboneraBaseGeometry, metalMaterial);
+        jaboneraBase.position.set(1, -0.8, -1);
+        jaboneraGroup.add(jaboneraBase);
+        
+        // Jabón
+        const jabonGeometry = new THREE.BoxGeometry(0.15, 0.05, 0.1);
+        const jabonMaterial = new THREE.MeshPhongMaterial({ 
+          color: 0xFFFACD,
+          shininess: 80
+        });
+        const jabon = new THREE.Mesh(jabonGeometry, jabonMaterial);
+        jabon.position.set(1, -0.75, -1);
+        jaboneraGroup.add(jabon);
+        
+        banosGroup.add(jaboneraGroup);
+        
+        // Efecto de vapor (partículas animadas)
+        const particleCount = 150;
+        const particles = new THREE.BufferGeometry();
+        const posArray = new Float32Array(particleCount * 3);
+        const velArray = new Float32Array(particleCount * 3);
+        
+        for (let i = 0; i < particleCount * 3; i += 3) {
+          posArray[i] = (Math.random() - 0.5) * 1.8; // x
+          posArray[i + 1] = Math.random() * 0.5 - 0.5; // y
+          posArray[i + 2] = (Math.random() - 0.5) * 1.3; // z
+          
+          // Velocidades iniciales
+          velArray[i] = (Math.random() - 0.5) * 0.005; // vx
+          velArray[i + 1] = Math.random() * 0.01 + 0.005; // vy (hacia arriba)
+          velArray[i + 2] = (Math.random() - 0.5) * 0.005; // vz
+        }
+        
+        particles.setAttribute('position', new THREE.BufferAttribute(posArray, 3));
+        particles.setAttribute('velocity', new THREE.BufferAttribute(velArray, 3));
+        
+        const particleMaterial = new THREE.PointsMaterial({
+          color: 0xFFFFFF,
+          size: 0.05,
+          transparent: true,
+          opacity: 0.6,
+          blending: THREE.AdditiveBlending
+        });
+        
+        const particleMesh = new THREE.Points(particles, particleMaterial);
+        baneraGroup.add(particleMesh);
+        
+        // Añadir el baño a la escena
+        banosGroup.userData = { interactive: true, modelType: 'banos' };
+        scene.add(banosGroup);
+        
+        // Animación del agua
+        function animarAgua() {
+          agua.material.opacity = 0.7 + Math.sin(Date.now() * 0.001) * 0.05;
+          agua.position.y = -0.6 + Math.sin(Date.now() * 0.002) * 0.01;
+        }
+        
+        // Animación de partículas
+        function animarParticulas() {
+          const positions = particles.attributes.position.array;
+          const velocities = particles.attributes.velocity.array;
+          
+          for (let i = 0; i < particleCount * 3; i += 3) {
+            // Actualizar posición
+            positions[i] += velocities[i]; // x
+            positions[i + 1] += velocities[i + 1]; // y
+            positions[i + 2] += velocities[i + 2]; // z
+            
+            // Si la partícula sale por arriba, reiniciarla abajo
+            if (positions[i + 1] > 0.5) {
+              positions[i + 1] = -0.5;
+              positions[i] = (Math.random() - 0.5) * 1.8;
+              positions[i + 2] = (Math.random() - 0.5) * 1.3;
+            }
+            
+            // Añadir un poco de movimiento aleatorio
+            velocities[i] += (Math.random() - 0.5) * 0.0005;
+            velocities[i + 2] += (Math.random() - 0.5) * 0.0005;
+          }
+          
+          particles.attributes.position.needsUpdate = true;
+        }
+        
+        // Función de animación
+        function animate() {
+          requestAnimationFrame(animate);
+          controls.update();
+          animarAgua();
+          animarParticulas();
+          renderer.render(scene, camera);
+        }
+        
+        animate();
+        
+        return { scene, camera, renderer, controls };
+      }
+      
+      // Función para crear el modelo 3D del área de descanso
+      function crearDescanso3D(canvas) {
+        // Crear escena
+        const scene = new THREE.Scene();
+        scene.background = new THREE.Color(0x87CEEB);
+        
+        // Crear cámara
+        const camera = new THREE.PerspectiveCamera(75, canvas.clientWidth / canvas.clientHeight, 0.1, 1000);
+        camera.position.set(5, 5, 5);
+        
+        // Crear renderer
+        const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+        renderer.setSize(canvas.clientWidth, canvas.clientHeight);
+        renderer.shadowMap.enabled = true;
+        canvas.appendChild(renderer.domElement);
+        
+        // Controles
+        const controls = new THREE.OrbitControls(camera, renderer.domElement);
+        controls.enableDamping = true;
+        controls.dampingFactor = 0.05;
+        controls.autoRotate = true;
+        controls.autoRotateSpeed = 2;
+        
+        // Iluminación
+        const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
+        scene.add(ambientLight);
+        
+        const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
+        directionalLight.position.set(5, 10, 7);
+        directionalLight.castShadow = true;
+        scene.add(directionalLight);
+        
+        // Suelo
+        const sueloGeometry = new THREE.BoxGeometry(8, 0.2, 8);
+        const sueloMaterial = new THREE.MeshPhongMaterial({ color: 0x8FBC8F });
+        const suelo = new THREE.Mesh(sueloGeometry, sueloMaterial);
+        suelo.position.y = -0.1;
+        suelo.receiveShadow = true;
+        scene.add(suelo);
+        
+        // Tumbonas
+        for (let i = 0; i < 3; i++) {
+          const tumbonaGeometry = new THREE.BoxGeometry(2, 0.3, 0.8);
+          const tumbonaMaterial = new THREE.MeshPhongMaterial({ color: 0xFFFFFF });
+          const tumbona = new THREE.Mesh(tumbonaGeometry, tumbonaMaterial);
+          tumbona.position.set(
+            (i - 1) * 2.5,
+            0.2,
+            0
+          );
+          tumbona.castShadow = true;
+          tumbona.userData = { interactive: true, modelType: 'descanso' };
+          scene.add(tumbona);
+          
+          // Respaldo de la tumbona
+          const respaldoGeometry = new THREE.BoxGeometry(2, 1, 0.1);
+          const respaldoMaterial = new THREE.MeshPhongMaterial({ color: 0xFFFFFF });
+          const respaldo = new THREE.Mesh(respaldoGeometry, respaldoMaterial);
+          respaldo.position.set(
+            (i - 1) * 2.5,
+            0.8,
+            -0.35
+          );
+          respaldo.rotation.x = Math.PI / 6;
+          scene.add(respaldo);
+        }
+        
+        // Sombrillas
+        for (let i = 0; i < 2; i++) {
+          const paloGeometry = new THREE.CylinderGeometry(0.05, 0.05, 3);
+          const paloMaterial = new THREE.MeshPhongMaterial({ color: 0x8B4513 });
+          const palo = new THREE.Mesh(paloGeometry, paloMaterial);
+          palo.position.set(
+            (i - 0.5) * 4,
+            1.5,
+            -2
+          );
+          scene.add(palo);
+          
+          const techoGeometry = new THREE.ConeGeometry(1.5, 0.5, 8);
+          const techoMaterial = new THREE.MeshPhongMaterial({ color: 0xFF4500 });
+          const techo = new THREE.Mesh(techoGeometry, techoMaterial);
+          techo.position.set(
+            (i - 0.5) * 4,
+            3.2,
+            -2
+          );
+          scene.add(techo);
+        }
+        
+        // Árboles (simples representaciones)
+        for (let i = 0; i < 4; i++) {
+          const troncoGeometry = new THREE.CylinderGeometry(0.2, 0.3, 2);
+          const troncoMaterial = new THREE.MeshPhongMaterial({ color: 0x8B4513 });
+          const tronco = new THREE.Mesh(troncoGeometry, troncoMaterial);
+          tronco.position.set(
+            (Math.random() - 0.5) * 8,
+            1,
+            (Math.random() - 0.5) * 8
+          );
+          tronco.castShadow = true;
+          scene.add(tronco);
+          
+          const hojasGeometry = new THREE.SphereGeometry(1, 8, 8);
+          const hojasMaterial = new THREE.MeshPhongMaterial({ color: 0x2E8B57 });
+          const hojas = new THREE.Mesh(hojasGeometry, hojasMaterial);
+          hojas.position.set(
+            (Math.random() - 0.5) * 8,
+            2.5,
+            (Math.random() - 0.5) * 8
+          );
+          hojas.castShadow = true;
+          scene.add(hojas);
+        }
+        
+        return { scene, camera, renderer, controls };
+      }
+      
+      // Función para mostrar información del modelo
+      function showModeloInfo(modelType) {
+        const info = modelosInfo[modelType];
+        if (info) {
+          modeloInfoTitle.textContent = info.title;
+          modeloInfoDescription.textContent = info.description;
+          
+          // Limpiar características anteriores
+          modeloInfoFeatures.innerHTML = '';
+          
+          // Agregar nuevas características
+          info.features.forEach(feature => {
+            const li = document.createElement('li');
+            li.textContent = feature;
+            modeloInfoFeatures.appendChild(li);
+          });
+          
+          // Mostrar modal
+          modeloInfoModal.style.display = 'flex';
+        }
+      }
+      
+      // Event listeners para botones de modelos 3D
+      modeloButtons.forEach(button => {
+        button.addEventListener('click', function() {
+          const modelType = this.getAttribute('data-model');
+          showModeloInfo(modelType);
+        });
+      });
+      
+      // Cerrar modal de información del modelo
+      modeloInfoClose.addEventListener('click', function() {
+        modeloInfoModal.style.display = 'none';
+      });
+      
+      // Cerrar modal al hacer clic fuera del contenido
+      window.addEventListener('click', function(event) {
+        if (event.target === modeloInfoModal) {
+          modeloInfoModal.style.display = 'none';
+        }
+      });
+      
+      // Event listener para el botón Volver 3D
+      volver3dBtn.addEventListener('click', function(e) {
+        e.preventDefault();
+        // Guardar en localStorage que queremos ver la experiencia 3D
+        localStorage.setItem('show3d', 'true');
+        // Redirigir a index.html
+        window.location.href = 'index.html';
+      });
+    });
+  </script>
+</body>
+</html>

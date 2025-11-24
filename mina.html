@@ -1,0 +1,1209 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Experiencia 3D: Mina Interactiva</title>
+    <style>
+        /* Estilos generales */
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Arial', sans-serif;
+            overflow: hidden;
+            background-color: #000;
+        }
+
+        #container {
+            width: 100vw;
+            height: 100vh;
+            position: relative;
+        }
+
+        #scene-container {
+            width: 100%;
+            height: 100%;
+        }
+
+        /* Estilos para el bloqueador inicial */
+        #blocker {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.8);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 10;
+        }
+
+        #instructions {
+            color: #fff;
+            text-align: center;
+            max-width: 600px;
+            padding: 20px;
+            background-color: rgba(0, 0, 0, 0.6);
+            border-radius: 10px;
+            border: 1px solid #555;
+        }
+
+        #instructions h1 {
+            margin-top: 0;
+            color: #f1c40f;
+        }
+
+        #instructions p {
+            margin: 10px 0;
+            font-size: 16px;
+        }
+
+        /* Estilos para el botón de bienvenida */
+        #welcome-btn {
+            margin-top: 20px;
+            padding: 12px 24px;
+            background-color: #f1c40f;
+            color: #000;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: bold;
+            transition: background-color 0.3s;
+        }
+
+        #welcome-btn:hover {
+            background-color: #f39c12;
+        }
+
+        /* Estilos para los modales */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 100;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.7);
+            overflow: auto;
+        }
+
+        .modal-content {
+            background-color: #2c2c2c;
+            margin: 10% auto;
+            padding: 20px;
+            border: 1px solid #555;
+            width: 80%;
+            max-width: 700px;
+            border-radius: 10px;
+            color: #fff;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
+        }
+
+        .modal-content h2 {
+            color: #f1c40f;
+            margin-top: 0;
+            border-bottom: 1px solid #555;
+            padding-bottom: 10px;
+        }
+
+        .modal-content p {
+            line-height: 1.6;
+            font-size: 16px;
+        }
+
+        .close {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .close:hover,
+        .close:focus {
+            color: #fff;
+            text-decoration: none;
+        }
+
+        /* Mensaje de interacción */
+        #interaction-message {
+            position: absolute;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            color: #fff;
+            background-color: rgba(0, 0, 0, 0.6);
+            padding: 10px 20px;
+            border-radius: 5px;
+            font-size: 16px;
+            display: none;
+            z-index: 5;
+        }
+    </style>
+</head>
+<body>
+    <div id="container">
+        <!-- Mensaje inicial para iniciar la experiencia -->
+        <div id="blocker">
+            <div id="instructions">
+                <h1>Experiencia 3D: Mina Interactiva</h1>
+                <p>Haz clic en cualquier lugar para comenzar</p>
+                <p>Movimiento: W, A, S, D (en dirección del puntero)</p>
+                <p>Interactuar: Click o ENTER</p>
+                <p>Salir: ESC</p>
+                <button id="welcome-btn">Ir a Bienvenidos</button>
+            </div>
+        </div>
+        
+        <!-- Contenedor para la escena 3D -->
+        <div id="scene-container"></div>
+        
+        <!-- Modales para la información de los cuadros -->
+        <div id="modal-container">
+            <!-- Modal 1: Historia del Balneario de Uncía -->
+            <div id="modal1" class="modal">
+                <div class="modal-content">
+                    <span class="close">&times;</span>
+                    <h2>Historia del Balneario de Uncía</h2>
+                    <p>El Balneario de Uncía, ubicado en la provincia de Bustillo del departamento de Potosí, Bolivia, es conocido por sus aguas termales con propiedades medicinales. Este balneario se originó a partir de la necesidad de los mineros de aliviar sus dolencias físicas causadas por el arduo trabajo en las minas. Las aguas termales, ricas en minerales como el azufre, calcio y magnesio, ofrecen beneficios terapéuticos para diversas afecciones de la piel, articulaciones y sistema respiratorio. A lo largo de los años, el balneario se ha convertido en un importante centro de turismo y relajación, atrayendo a visitantes de todo el país y del extranjero que buscan los beneficios curativos de sus aguas.</p>
+                </div>
+            </div>
+            
+            <!-- Modal 2: Historia de Simón Patiño -->
+            <div id="modal2" class="modal">
+                <div class="modal-content">
+                    <span class="close">&times;</span>
+                    <h2>Historia de Simón Patiño</h2>
+                    <p>Simón Iturri Patiño (1860-1947), conocido como el "Rey del Estaño", fue uno de los hombres más ricos del mundo y el magnate minero más importante de Bolivia. Nacido en una familia humilde, Patiño comenzó trabajando como empleado en una tienda, pero su vida cambió cuando descubrió una rica veta de estaño en la mina La Salvadora. A través de su astucia empresarial y estratégicas alianzas, construyó un imperio minero que controlaba gran parte de la producción mundial de estaño. Aunque su fortuna le permitió vivir entre Europa y Estados Unidos, Patiño nunca olvidó sus raíces bolivianas y realizó importantes obras filantrópicas en su país natal.</p>
+                </div>
+            </div>
+            
+            <!-- Modal 3: Historia de Arcángel San Miguel -->
+            <div id="modal3" class="modal">
+                <div class="modal-content">
+                    <span class="close">&times;</span>
+                    <h2>Historia de Arcángel San Miguel</h2>
+                    <p>El Arcángel San Miguel es una figura importante en la tradición minera de Bolivia. Considerado el protector de los mineros, San Miguel es venerado en las minas del país, especialmente en el departamento de Potosí. Según la creencia popular, el arcángel guía a los mineros en su trabajo peligroso, los protege de accidentes y les ayuda a encontrar vetas ricas de minerales. En muchas minas, se construyen pequeños altares dedicados a San Miguel, donde los mineros dejan ofrendas como velas, flores y bebidas alcohólicas antes de ingresar a las profundidades de la tierra. Esta devoción mezcla elementos de la religión católica con creencias ancestrales andinas, reflejando la sincretismo cultural característico de la región.</p>
+                </div>
+            </div>
+            
+            <!-- Modal 4: Historia del Tío de la Mina -->
+            <div id="modal4" class="modal">
+                <div class="modal-content">
+                    <span class="close">&times;</span>
+                    <h2>Historia del Tío de la Mina</h2>
+                    <p>El Tío de la Mina es una figura mitológica fundamental en la cosmovisión minera de los Andes bolivianos. Representa al espíritu o dueño de la mina, una entidad sobrenatural que gobierna las profundidades de la tierra y controla la riqueza mineral. El Tío es representado como una figura antropomorfa con rasgos diabólicos: cuernos, colmillos y una expresión fierz. Los mineros le rinden culto para obtener su protección y favores, dejándole ofrendas como hojas de coca, cigarros y alcohol antes de comenzar su jornada laboral. Esta figura simboliza la dualidad de la minería: fuente de riqueza pero también de peligro y muerte. El culto al Tío es una expresión de la sincretismo entre las creencias indígenas precolombinas y el catolicismo traído por los españoles.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bibliotecas necesarias -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/PointerLockControls.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/TextureLoader.js"></script>
+    
+    <!-- Nuestro código principal -->
+    <script>
+        // Variables globales
+        let scene, camera, renderer, controls;
+        let moveForward = false, moveBackward = false, moveLeft = false, moveRight = false;
+        let velocity = new THREE.Vector3();
+        let direction = new THREE.Vector3();
+        let raycaster, objects = [];
+        let prevTime = performance.now();
+        let candles = [];
+        let frames = [];
+        let miners = [];
+        let uncle = null;
+        let isModalOpen = false; // Variable para controlar si hay un modal abierto
+
+        // Variables para colisiones
+        let collisionObjects = [];
+        let playerRadius = 0.5;
+
+        // Inicialización de la escena
+        function init() {
+            // Crear la escena
+            scene = new THREE.Scene();
+            scene.fog = new THREE.Fog(0x000000, 1, 60); // Niebla para dar profundidad (aumentado el alcance)
+            
+            // Configurar la cámara
+            camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+            camera.position.set(0, 1.6, 5); // Altura de una persona promedio
+            
+            // Configurar el renderer
+            renderer = new THREE.WebGLRenderer({ antialias: true });
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            renderer.shadowMap.enabled = true;
+            renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+            document.getElementById('scene-container').appendChild(renderer.domElement);
+            
+            // Configurar controles de puntero
+            controls = new THREE.PointerLockControls(camera, document.body);
+            scene.add(controls.getObject());
+            
+            // Configurar raycaster para interacciones
+            raycaster = new THREE.Raycaster(new THREE.Vector3(), new THREE.Vector3(0, 0, -1), 0, 10);
+            
+            // Eventos de teclado
+            document.addEventListener('keydown', onKeyDown);
+            document.addEventListener('keyup', onKeyUp);
+            document.addEventListener('click', onMouseClick);
+            document.addEventListener('keypress', onKeyPress);
+            
+            // Eventos para el bloqueador
+            const blocker = document.getElementById('blocker');
+            const instructions = document.getElementById('instructions');
+            
+            instructions.addEventListener('click', function() {
+                controls.lock();
+            });
+            
+            // Evento para el botón de bienvenida
+            document.getElementById('welcome-btn').addEventListener('click', function() {
+                window.location.href = 'index.html';
+            });
+            
+            controls.addEventListener('lock', function() {
+                instructions.style.display = 'none';
+                blocker.style.display = 'none';
+                // Ocultar el cursor cuando se bloquean los controles
+                document.body.style.cursor = 'none';
+            });
+            
+            controls.addEventListener('unlock', function() {
+                // Solo mostrar el bloqueador si no hay un modal abierto
+                if (!isModalOpen) {
+                    blocker.style.display = 'flex';
+                    instructions.style.display = '';
+                }
+            });
+            
+            // Configurar modales
+            setupModals();
+            
+            // Crear el entorno de la mina
+            createMineEnvironment();
+            
+            // Crear velas
+            createCandles();
+            
+            // Crear cuadros interactivos
+            createFrames();
+            
+            // Crear mineros animados
+            createMiners();
+            
+            // Crear el Tío de la Mina
+            createUncle();
+            
+            // Añadir luz ambiental tenue (aumentada)
+            const ambientLight = new THREE.AmbientLight(0x404040, 0.4);
+            scene.add(ambientLight);
+            
+            // Iniciar el bucle de animación
+            animate();
+        }
+
+        // Función para crear el entorno de la mina
+        function createMineEnvironment() {
+            // Texturas para la mina
+            const textureLoader = new THREE.TextureLoader();
+            
+            // Textura para las paredes (placeholder)
+            const wallTexture = textureLoader.load('https://picsum.photos/seed/rockwall/1024/1024.jpg');
+            wallTexture.wrapS = THREE.RepeatWrapping;
+            wallTexture.wrapT = THREE.RepeatWrapping;
+            wallTexture.repeat.set(4, 4);
+            
+            // Textura para el suelo (placeholder)
+            const floorTexture = textureLoader.load('https://picsum.photos/seed/ground/1024/1024.jpg');
+            floorTexture.wrapS = THREE.RepeatWrapping;
+            floorTexture.wrapT = THREE.RepeatWrapping;
+            floorTexture.repeat.set(4, 20);
+            
+            // Material para las paredes
+            const wallMaterial = new THREE.MeshStandardMaterial({ 
+                map: wallTexture,
+                roughness: 0.9,
+                metalness: 0.1
+            });
+            
+            // Material para el suelo
+            const floorMaterial = new THREE.MeshStandardMaterial({ 
+                map: floorTexture,
+                roughness: 0.8,
+                metalness: 0.2
+            });
+            
+            // Crear el suelo
+            const floorGeometry = new THREE.PlaneGeometry(10, 100);
+            const floor = new THREE.Mesh(floorGeometry, floorMaterial);
+            floor.rotation.x = -Math.PI / 2;
+            floor.position.y = 0;
+            floor.receiveShadow = true;
+            scene.add(floor);
+            collisionObjects.push(floor);
+            
+            // Crear el techo
+            const ceiling = new THREE.Mesh(floorGeometry, wallMaterial);
+            ceiling.rotation.x = Math.PI / 2;
+            ceiling.position.y = 8;
+            scene.add(ceiling);
+            collisionObjects.push(ceiling);
+            
+            // Crear las paredes laterales
+            const leftWallGeometry = new THREE.PlaneGeometry(100, 8);
+            const leftWall = new THREE.Mesh(leftWallGeometry, wallMaterial);
+            leftWall.rotation.y = Math.PI / 2;
+            leftWall.position.set(-5, 4, 0);
+            leftWall.receiveShadow = true;
+            scene.add(leftWall);
+            collisionObjects.push(leftWall);
+            
+            const rightWallGeometry = new THREE.PlaneGeometry(100, 8);
+            const rightWall = new THREE.Mesh(rightWallGeometry, wallMaterial);
+            rightWall.rotation.y = -Math.PI / 2;
+            rightWall.position.set(5, 4, 0);
+            rightWall.receiveShadow = true;
+            scene.add(rightWall);
+            collisionObjects.push(rightWall);
+            
+            // Crear rocas dispersas en el suelo
+            for (let i = 0; i < 20; i++) {
+                const rockGeometry = new THREE.DodecahedronGeometry(Math.random() * 0.5 + 0.2, 0);
+                const rockMaterial = new THREE.MeshStandardMaterial({ 
+                    color: 0x888888,
+                    roughness: 0.9
+                });
+                const rock = new THREE.Mesh(rockGeometry, rockMaterial);
+                
+                // Posición aleatoria en el túnel
+                rock.position.set(
+                    (Math.random() - 0.5) * 8,
+                    Math.random() * 0.3,
+                    (Math.random() - 0.5) * 90
+                );
+                
+                rock.castShadow = true;
+                rock.receiveShadow = true;
+                scene.add(rock);
+                collisionObjects.push(rock);
+            }
+            
+            // Crear pilares de soporte
+            for (let i = -40; i <= 40; i += 20) {
+                const pillarGeometry = new THREE.BoxGeometry(0.5, 8, 0.5);
+                const pillarMaterial = new THREE.MeshStandardMaterial({ 
+                    color: 0x8B4513,
+                    roughness: 0.8
+                });
+                
+                // Pilar izquierdo
+                const leftPillar = new THREE.Mesh(pillarGeometry, pillarMaterial);
+                leftPillar.position.set(-3, 4, i);
+                leftPillar.castShadow = true;
+                leftPillar.receiveShadow = true;
+                scene.add(leftPillar);
+                collisionObjects.push(leftPillar);
+                
+                // Pilar derecho
+                const rightPillar = new THREE.Mesh(pillarGeometry, pillarMaterial);
+                rightPillar.position.set(3, 4, i);
+                rightPillar.castShadow = true;
+                rightPillar.receiveShadow = true;
+                scene.add(rightPillar);
+                collisionObjects.push(rightPillar);
+            }
+        }
+
+        // Función para crear velas
+        function createCandles() {
+            // Crear más velas para mejor iluminación
+            const candlePositions = [
+                // Velas originales
+                { x: -3, z: -20 },  // Izquierda 1
+                { x: -3, z: 10 },   // Izquierda 2
+                { x: 3, z: -20 },   // Derecha 1
+                { x: 3, z: 10 },    // Derecha 2
+                
+                // Velas adicionales cerca del Tío de la Mina
+                { x: -2, z: -43 },  // Cerca del Tío 1
+                { x: 2, z: -43 },   // Cerca del Tío 2
+                { x: -1, z: -47 },  // Cerca del Tío 3
+                { x: 1, z: -47 },   // Cerca del Tío 4
+                
+                // Velas adicionales cerca de los mineros
+                { x: -3.5, z: -30 }, // Cerca del minero 1
+                { x: 3.5, z: 20 },   // Cerca del minero 2
+                
+                // Velas adicionales a lo largo del túnel
+                { x: -4, z: 0 },    // Centro túnel izquierdo
+                { x: 4, z: 0 }      // Centro túnel derecho
+            ];
+            
+            candlePositions.forEach((pos, index) => {
+                // Crear la base de la vela
+                const candleBaseGeometry = new THREE.CylinderGeometry(0.2, 0.25, 0.1, 16);
+                const candleBaseMaterial = new THREE.MeshStandardMaterial({ 
+                    color: 0x8B4513,
+                    roughness: 0.7
+                });
+                const candleBase = new THREE.Mesh(candleBaseGeometry, candleBaseMaterial);
+                candleBase.position.set(pos.x, 0.05, pos.z);
+                candleBase.castShadow = true;
+                candleBase.receiveShadow = true;
+                scene.add(candleBase);
+                collisionObjects.push(candleBase);
+                
+                // Crear el cuerpo de la vela
+                const candleGeometry = new THREE.CylinderGeometry(0.1, 0.1, 0.5, 16);
+                const candleMaterial = new THREE.MeshStandardMaterial({ 
+                    color: 0xFFFFE0,
+                    roughness: 0.5
+                });
+                const candle = new THREE.Mesh(candleGeometry, candleMaterial);
+                candle.position.set(pos.x, 0.35, pos.z);
+                candle.castShadow = true;
+                candle.receiveShadow = true;
+                scene.add(candle);
+                collisionObjects.push(candle);
+                
+                // Crear la llama de la vela
+                const flameGeometry = new THREE.ConeGeometry(0.08, 0.2, 8);
+                const flameMaterial = new THREE.MeshBasicMaterial({ 
+                    color: 0xFFA500,
+                    transparent: true,
+                    opacity: 0.8
+                });
+                const flame = new THREE.Mesh(flameGeometry, flameMaterial);
+                flame.position.set(pos.x, 0.7, pos.z);
+                scene.add(flame);
+                
+                // Crear la luz de la vela (aumentada intensidad y alcance)
+                const candleLight = new THREE.PointLight(0xFFA500, 1.5, 15);
+                candleLight.position.set(pos.x, 0.7, pos.z);
+                candleLight.castShadow = true;
+                candleLight.shadow.mapSize.width = 512;
+                candleLight.shadow.mapSize.height = 512;
+                scene.add(candleLight);
+                
+                // Guardar referencias para animación
+                candles.push({
+                    flame: flame,
+                    light: candleLight,
+                    baseIntensity: 1.5,
+                    time: Math.random() * Math.PI * 2
+                });
+            });
+        }
+
+     // Función para crear cuadros interactivos
+function createFrames() {
+    // Crear 4 cuadros (2 a cada lado) con rutas de imágenes locales
+    const framePositions = [
+        { 
+            x: -2.8, 
+            z: -15, 
+            infoId: 1,  
+            imagePath: 'img/cuadro1.jpg' // Ruta relativa a la imagen
+        },  // Izquierda 1 - Balneario de Uncía
+        { 
+            x: -2.8, 
+            z: 10, 
+            infoId: 2,   
+            imagePath: 'img/cuadro2.jpg' // Ruta relativa a la imagen
+        },   // Izquierda 2 - Simón Patiño
+        { 
+            x: 2.8, 
+            z: -15, 
+            infoId: 3,   
+            imagePath: 'img/cuadro3.jpg' // Ruta relativa a la imagen
+        },   // Derecha 1 - Arcángel San Miguel
+        { 
+            x: 2.8, 
+            z: 10, 
+            infoId: 4,     
+            imagePath: 'img/cuadro4.jpg' // Ruta relativa a la imagen
+        }     // Derecha 2 - Tío de la Mina
+    ];
+    
+    framePositions.forEach(pos => {
+        // Crear el marco del cuadro
+        const frameGeometry = new THREE.BoxGeometry(1, 1.8, 0.1);
+        const frameMaterial = new THREE.MeshStandardMaterial({ 
+            color: 0x8B4513,
+            roughness: 0.7
+        });
+        const frame = new THREE.Mesh(frameGeometry, frameMaterial);
+        
+        // Posicionar el cuadro
+        if (pos.x < 0) {
+            frame.position.set(-3, 3, pos.z);
+            frame.rotation.y = Math.PI / 2;
+        } else {
+            frame.position.set(3, 3, pos.z);
+            frame.rotation.y = -Math.PI / 2;
+        }
+        
+        frame.castShadow = true;
+        frame.receiveShadow = true;
+        scene.add(frame);
+        collisionObjects.push(frame);
+        
+        // Crear el contenido del cuadro con imagen local
+        const contentGeometry = new THREE.PlaneGeometry(1, 1.6);
+        const textureLoader = new THREE.TextureLoader();
+        
+        // Cargar imagen local específica para cada cuadro
+        const contentTexture = textureLoader.load(
+            pos.imagePath,
+            // Callback de carga exitosa
+            (texture) => {
+                console.log(`Imagen cargada para cuadro ${pos.infoId}: ${pos.imagePath}`);
+            },
+            // Callback de progreso
+            undefined,
+            // Callback de error
+            (err) => {
+                console.error(`Error cargando imagen para cuadro ${pos.infoId}:`, err);
+                // Textura de respaldo en caso de error
+                const fallbackTexture = textureLoader.load('imagenes/fallback.jpg');
+                contentMaterial.map = fallbackTexture;
+                contentMaterial.needsUpdate = true;
+            }
+        );
+        
+        const contentMaterial = new THREE.MeshBasicMaterial({ 
+            map: contentTexture,
+            side: THREE.DoubleSide
+        });
+        const content = new THREE.Mesh(contentGeometry, contentMaterial);
+        
+        // Posicionar el contenido dentro del marco
+        if (pos.x < 0) {
+            content.position.set(pos.x - 0.06, 3, pos.z);
+            content.rotation.y = Math.PI / 2;
+        } else {
+            content.position.set(pos.x + 0.06, 3, pos.z);
+            content.rotation.y = -Math.PI / 2;
+        }
+        
+        scene.add(content);
+        
+        // Guardar referencia para interacción
+        frames.push({
+            mesh: frame,
+            infoId: pos.infoId
+        });
+        
+        // Añadir a objetos interactivos
+        objects.push(frame);
+    });
+}
+        // Función para crear mineros animados
+        function createMiners() {
+            const loader = new THREE.GLTFLoader();
+            
+            // Posiciones para los mineros
+            const minerPositions = [
+                { x: -4, z: -45 },
+                { x: 4, z: 2 }
+            ];
+            
+            // Cargar el modelo del minero
+            loader.load('min1.glb', function(gltf) {
+                const minerModel = gltf.scene;
+                
+                // Configurar sombras
+                minerModel.traverse((node) => {
+                    if (node.isMesh) {
+                        node.castShadow = true;
+                        node.receiveShadow = true;
+                    }
+                });
+                
+                // Crear mineros en las posiciones especificadas
+                minerPositions.forEach(pos => {
+                    const miner = minerModel.clone();
+                    miner.position.set(pos.x, 0, pos.z);
+                    // Aumentar el tamaño del modelo del minero (escala 3 veces más grande)
+                    miner.scale.set(3, 3, 3);
+                    
+                    // Añadir a la escena
+                    scene.add(miner);
+                    
+                    
+                    
+                    // Añadir a objetos de colisión
+                    collisionObjects.push(miner);
+                    
+                    // Reproducir animación si existe
+                    if (gltf.animations && gltf.animations.length > 0) {
+                        const action = miners[miners.length - 1].mixer.clipAction(gltf.animations[0]);
+                        action.play();
+                    }
+                });
+            }, undefined, function(error) {
+                console.error('Error al cargar el modelo del minero:', error);
+                
+                // Si hay un error, crear un placeholder
+                createMinerPlaceholder();
+            });
+        }
+
+        // Función para crear mineros placeholder (en caso de error al cargar el modelo)
+        function createMinerPlaceholder() {
+            const minerPositions = [
+                { x: -4, z: -30 },
+                { x: 4, z: 20 }
+            ];
+            
+            minerPositions.forEach(pos => {
+                // Crear cuerpo del minero (aumentado de tamaño)
+                const bodyGeometry = new THREE.CylinderGeometry(0.45, 0.6, 2.25, 8);
+                const bodyMaterial = new THREE.MeshStandardMaterial({ 
+                    color: 0x4169E1,
+                    roughness: 0.8
+                });
+                const body = new THREE.Mesh(bodyGeometry, bodyMaterial);
+                body.position.set(pos.x, 1.125, pos.z);
+                body.castShadow = true;
+                body.receiveShadow = true;
+                scene.add(body);
+                
+                // Crear cabeza del minero (aumentada de tamaño)
+                const headGeometry = new THREE.SphereGeometry(0.375, 8, 8);
+                const headMaterial = new THREE.MeshStandardMaterial({ 
+                    color: 0xFFDBAC,
+                    roughness: 0.7
+                });
+                const head = new THREE.Mesh(headGeometry, headMaterial);
+                head.position.set(pos.x, 2.55, pos.z);
+                head.castShadow = true;
+                head.receiveShadow = true;
+                scene.add(head);
+                
+                // Crear casco del minero (aumentado de tamaño)
+                const helmetGeometry = new THREE.SphereGeometry(0.42, 8, 8, 0, Math.PI * 2, 0, Math.PI / 2);
+                const helmetMaterial = new THREE.MeshStandardMaterial({ 
+                    color: 0xFFD700,
+                    roughness: 0.5
+                });
+                const helmet = new THREE.Mesh(helmetGeometry, helmetMaterial);
+                helmet.position.set(pos.x, 2.55, pos.z);
+                helmet.rotation.x = Math.PI;
+                helmet.castShadow = true;
+                scene.add(helmet);
+                
+                // Crear pico del minero (aumentado de tamaño)
+                const pickGeometry = new THREE.CylinderGeometry(0.03, 0.03, 1.5, 8);
+                const pickMaterial = new THREE.MeshStandardMaterial({ 
+                    color: 0x8B4513,
+                    roughness: 0.6
+                });
+                const pick = new THREE.Mesh(pickGeometry, pickMaterial);
+                pick.position.set(pos.x + 0.75, 1.8, pos.z);
+                pick.rotation.z = Math.PI / 4;
+                pick.castShadow = true;
+                scene.add(pick);
+                
+                // Crear luz del casco brillante
+                const helmetLight = new THREE.SpotLight(0xFFFFFF, 1.2, 20, Math.PI / 5, 0.8);
+                helmetLight.position.set(pos.x, 2.7, pos.z);
+                helmetLight.target.position.set(pos.x, 1, pos.z - 3);
+                helmetLight.castShadow = true;
+                scene.add(helmetLight);
+                scene.add(helmetLight.target);
+                
+                // Añadir lámpara visual brillante en el casco
+                const lampGeometry = new THREE.CylinderGeometry(0.15, 0.2, 0.3, 16);
+                const lampMaterial = new THREE.MeshBasicMaterial({ 
+                    color: 0xFFFFAA,
+                    emissive: 0xFFFFAA,
+                    emissiveIntensity: 2.0
+                });
+                const lamp = new THREE.Mesh(lampGeometry, lampMaterial);
+                lamp.position.set(pos.x, 2.8, pos.z + 0.3);
+                scene.add(lamp);
+                
+                // Añadir cono de luz visible
+                const coneGeometry = new THREE.ConeGeometry(0.5, 1.5, 16);
+                const coneMaterial = new THREE.MeshBasicMaterial({ 
+                    color: 0xFFFFAA,
+                    transparent: true,
+                    opacity: 0.3
+                });
+                const lightCone = new THREE.Mesh(coneGeometry, coneMaterial);
+                lightCone.position.set(pos.x, 2.2, pos.z + 0.8);
+                lightCone.rotation.x = Math.PI;
+                scene.add(lightCone);
+                
+                // Guardar referencias para animación
+                miners.push({
+                    body: body,
+                    head: head,
+                    helmet: helmet,
+                    pick: pick,
+                    light: helmetLight,
+                    lamp: lamp,
+                    lightCone: lightCone,
+                    time: Math.random() * Math.PI * 2,
+                    position: pos
+                });
+                
+                // Añadir a objetos de colisión
+                collisionObjects.push(body);
+                collisionObjects.push(head);
+                collisionObjects.push(helmet);
+                collisionObjects.push(pick);
+            });
+        }
+
+        // Función para crear el Tío de la Mina
+        function createUncle() {
+            const loader = new THREE.GLTFLoader();
+            
+            // Cargar el modelo del Tío de la Mina
+            loader.load('tio.glb', function(gltf) {
+                const uncleModel = gltf.scene;
+                
+                // Configurar sombras
+                uncleModel.traverse((node) => {
+                    if (node.isMesh) {
+                        node.castShadow = true;
+                        node.receiveShadow = true;
+                    }
+                });
+                
+                // Posicionar el modelo
+                uncleModel.position.set(0, 0, -45);
+                // Aumentar el tamaño del modelo del Tío de la Mina (escala 1.5 veces más grande)
+                uncleModel.scale.set(6, 6, 6);
+                
+                // Añadir a la escena
+                scene.add(uncleModel);
+                
+                // Guardar referencias para animación
+                uncle = {
+                    model: uncleModel,
+                    mixer: new THREE.AnimationMixer(uncleModel),
+                    animations: gltf.animations,
+                    time: 0
+                };
+                
+                // Añadir a objetos de colisión
+                collisionObjects.push(uncleModel);
+                
+                // Reproducir animación si existe
+                if (gltf.animations && gltf.animations.length > 0) {
+                    const action = uncle.mixer.clipAction(gltf.animations[0]);
+                    action.play();
+                }
+                
+                // Crear luz ambiental alrededor del Tío (aumentada intensidad)
+                const uncleLight = new THREE.PointLight(0xFF0000, 0.8, 15);
+                uncleLight.position.set(0, 3, -45);
+                scene.add(uncleLight);
+                
+                // Guardar referencia a la luz
+                uncle.light = uncleLight;
+                
+            }, undefined, function(error) {
+                console.error('Error al cargar el modelo del Tío de la Mina:', error);
+                
+                // Si hay un error, crear un placeholder
+                createUnclePlaceholder();
+            });
+        }
+
+        // Función para crear el Tío de la Mina placeholder (en caso de error al cargar el modelo)
+        function createUnclePlaceholder() {
+            // Posición al final del túnel
+            const unclePosition = { x: 0, z: -45 };
+            
+            // Crear cuerpo del Tío (aumentado de tamaño)
+            const bodyGeometry = new THREE.CylinderGeometry(0.75, 0.9, 3, 8);
+            const bodyMaterial = new THREE.MeshStandardMaterial({ 
+                color: 0x8B0000,
+                roughness: 0.8
+            });
+            const body = new THREE.Mesh(bodyGeometry, bodyMaterial);
+            body.position.set(unclePosition.x, 1.5, unclePosition.z);
+            body.castShadow = true;
+            body.receiveShadow = true;
+            scene.add(body);
+            
+            // Crear cabeza del Tío (aumentada de tamaño)
+            const headGeometry = new THREE.SphereGeometry(0.6, 8, 8);
+            const headMaterial = new THREE.MeshStandardMaterial({ 
+                color: 0xFFDBAC,
+                roughness: 0.7
+            });
+            const head = new THREE.Mesh(headGeometry, headMaterial);
+            head.position.set(unclePosition.x, 3.45, unclePosition.z);
+            head.castShadow = true;
+            head.receiveShadow = true;
+            scene.add(head);
+            
+            // Crear cuernos del Tío (aumentados de tamaño)
+            const hornGeometry = new THREE.ConeGeometry(0.15, 0.75, 8);
+            const hornMaterial = new THREE.MeshStandardMaterial({ 
+                color: 0x8B4513,
+                roughness: 0.6
+            });
+            
+            const leftHorn = new THREE.Mesh(hornGeometry, hornMaterial);
+            leftHorn.position.set(unclePosition.x - 0.45, 3.9, unclePosition.z);
+            leftHorn.rotation.z = -Math.PI / 6;
+            leftHorn.castShadow = true;
+            scene.add(leftHorn);
+            
+            const rightHorn = new THREE.Mesh(hornGeometry, hornMaterial);
+            rightHorn.position.set(unclePosition.x + 0.45, 3.9, unclePosition.z);
+            rightHorn.rotation.z = Math.PI / 6;
+            rightHorn.castShadow = true;
+            scene.add(rightHorn);
+            
+            // Crear ojos del Tío (brillantes) (aumentados de tamaño)
+            const eyeGeometry = new THREE.SphereGeometry(0.12, 8, 8);
+            const eyeMaterial = new THREE.MeshBasicMaterial({ 
+                color: 0xFF0000,
+                emissive: 0xFF0000,
+                emissiveIntensity: 0.7
+            });
+            
+            const leftEye = new THREE.Mesh(eyeGeometry, eyeMaterial);
+            leftEye.position.set(unclePosition.x - 0.225, 3.45, unclePosition.z + 0.525);
+            scene.add(leftEye);
+            
+            const rightEye = new THREE.Mesh(eyeGeometry, eyeMaterial);
+            rightEye.position.set(unclePosition.x + 0.225, 3.45, unclePosition.z + 0.525);
+            scene.add(rightEye);
+            
+            // Crear luz ambiental alrededor del Tío (aumentada intensidad)
+            const uncleLight = new THREE.PointLight(0xFF0000, 0.8, 15);
+            uncleLight.position.set(unclePosition.x, 3, unclePosition.z);
+            scene.add(uncleLight);
+            
+            // Guardar referencia para animación
+            uncle = {
+                body: body,
+                head: head,
+                leftHorn: leftHorn,
+                rightHorn: rightHorn,
+                leftEye: leftEye,
+                rightEye: rightEye,
+                light: uncleLight,
+                time: 0
+            };
+            
+            // Añadir a objetos de colisión
+            collisionObjects.push(body);
+            collisionObjects.push(head);
+            collisionObjects.push(leftHorn);
+            collisionObjects.push(rightHorn);
+        }
+
+        // Función para configurar los modales
+        function setupModals() {
+            // Obtener todos los modales
+            const modals = document.querySelectorAll('.modal');
+            
+            // Obtener todos los botones de cerrar
+            const closeButtons = document.querySelectorAll('.close');
+            
+            // Configurar los botones de cerrar
+            closeButtons.forEach(button => {
+                button.onclick = function() {
+                    const modal = this.closest('.modal');
+                    modal.style.display = 'none';
+                    isModalOpen = false;
+                    // Volver a bloquear el cursor después de cerrar el modal
+                    controls.lock();
+                };
+            });
+            
+            // Cerrar modal al hacer clic fuera de él
+            window.onclick = function(event) {
+                if (event.target.classList.contains('modal')) {
+                    event.target.style.display = 'none';
+                    isModalOpen = false;
+                    // Volver a bloquear el cursor después de cerrar el modal
+                    controls.lock();
+                }
+            };
+            
+            // Cerrar modal con la tecla ESC
+            document.addEventListener('keydown', function(event) {
+                if (event.key === 'Escape' && isModalOpen) {
+                    modals.forEach(modal => {
+                        if (modal.style.display === 'block') {
+                            modal.style.display = 'none';
+                        }
+                    });
+                    isModalOpen = false;
+                    // Volver a bloquear el cursor después de cerrar el modal
+                    controls.lock();
+                }
+            });
+        }
+
+        // Función para mostrar un modal
+        function showModal(modalId) {
+            const modal = document.getElementById(`modal${modalId}`);
+            if (modal) {
+                modal.style.display = 'block';
+                isModalOpen = true;
+                // Desbloquear el cursor para que el usuario pueda interactuar con el modal
+                controls.unlock();
+                // Ocultar el bloqueador para que no interfiera con el modal
+                document.getElementById('blocker').style.display = 'none';
+                // Mostrar el cursor explícitamente
+                document.body.style.cursor = 'auto';
+            }
+        }
+
+        // Manejadores de eventos de teclado
+        function onKeyDown(event) {
+            switch (event.code) {
+                case 'ArrowUp':
+                case 'KeyW':
+                    moveForward = true;
+                    break;
+                case 'ArrowLeft':
+                case 'KeyA':
+                    moveLeft = true;
+                    break;
+                case 'ArrowDown':
+                case 'KeyS':
+                    moveBackward = true;
+                    break;
+                case 'ArrowRight':
+                case 'KeyD':
+                    moveRight = true;
+                    break;
+            }
+        }
+
+        function onKeyUp(event) {
+            switch (event.code) {
+                case 'ArrowUp':
+                case 'KeyW':
+                    moveForward = false;
+                    break;
+                case 'ArrowLeft':
+                case 'KeyA':
+                    moveLeft = false;
+                    break;
+                case 'ArrowDown':
+                case 'KeyS':
+                    moveBackward = false;
+                    break;
+                case 'ArrowRight':
+                case 'KeyD':
+                    moveRight = false;
+                    break;
+            }
+        }
+
+        // Manejador de evento de clic del ratón
+        function onMouseClick() {
+            if (controls.isLocked) {
+                // Realizar raycasting para detectar objetos interactivos
+                raycaster.setFromCamera(new THREE.Vector2(0, 0), camera);
+                const intersects = raycaster.intersectObjects(objects);
+                
+                if (intersects.length > 0) {
+                    // Buscar el cuadro correspondiente
+                    for (let frame of frames) {
+                        if (frame.mesh === intersects[0].object) {
+                            showModal(frame.infoId);
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+
+        // Manejador de evento de pulsación de tecla
+        function onKeyPress(event) {
+            // Solo responder a ENTER si los controles están bloqueados (estamos en el modo de primera persona)
+            if (controls.isLocked && event.key === 'Enter') {
+                // Realizar raycasting para detectar objetos interactivos
+                raycaster.setFromCamera(new THREE.Vector2(0, 0), camera);
+                const intersects = raycaster.intersectObjects(objects);
+                
+                if (intersects.length > 0) {
+                    // Buscar el cuadro correspondiente
+                    for (let frame of frames) {
+                        if (frame.mesh === intersects[0].object) {
+                            showModal(frame.infoId);
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+
+        // Función para verificar colisiones
+        function checkCollisions(position) {
+            // Crear un raycaster en cada dirección para detectar colisiones
+            const directions = [
+                new THREE.Vector3(1, 0, 0),   // Derecha
+                new THREE.Vector3(-1, 0, 0),  // Izquierda
+                new THREE.Vector3(0, 0, 1),   // Adelante
+                new THREE.Vector3(0, 0, -1)   // Atrás
+            ];
+            
+            for (let dir of directions) {
+                const raycaster = new THREE.Raycaster(position, dir, 0, playerRadius);
+                const intersects = raycaster.intersectObjects(collisionObjects);
+                
+                if (intersects.length > 0) {
+                    // Hay una colisión
+                    return true;
+                }
+            }
+            
+            return false;
+        }
+
+        // Bucle de animación
+        function animate() {
+            requestAnimationFrame(animate);
+            
+            const time = performance.now();
+            const delta = (time - prevTime) / 1000;
+            
+            if (controls.isLocked) {
+                // Obtener la dirección de la cámara
+                const forward = new THREE.Vector3();
+                camera.getWorldDirection(forward);
+                forward.y = 0; // Mantener el movimiento en el plano horizontal
+                forward.normalize();
+                
+                // Calcular el vector derecho (perpendicular al forward)
+                const right = new THREE.Vector3();
+                right.crossVectors(forward, new THREE.Vector3(0, 1, 0)).normalize();
+                
+                // Calcular el vector de movimiento
+                direction.set(0, 0, 0);
+                if (moveForward) direction.add(forward);
+                if (moveBackward) direction.sub(forward);
+                if (moveRight) direction.add(right);
+                if (moveLeft) direction.sub(right);
+                
+                // Normalizar la dirección para que la velocidad diagonal no sea mayor
+                if (direction.length() > 0) direction.normalize();
+                
+                // Aplicar velocidad
+                velocity.x -= direction.x * 10.0 * delta;
+                velocity.z -= direction.z * 10.0 * delta;
+                
+                // Aplicar fricción
+                velocity.x *= 0.5;
+                velocity.z *= 0.5;
+                
+                // Calcular nueva posición
+                const moveX = -velocity.x * delta;
+                const moveZ = -velocity.z * delta;
+                
+                // Verificar colisiones en el eje X
+                const newPositionX = controls.getObject().position.clone();
+                newPositionX.x += moveX;
+                if (!checkCollisions(newPositionX)) {
+                    controls.getObject().position.x = newPositionX.x;
+                }
+                
+                // Verificar colisiones en el eje Z
+                const newPositionZ = controls.getObject().position.clone();
+                newPositionZ.z += moveZ;
+                if (!checkCollisions(newPositionZ)) {
+                    controls.getObject().position.z = newPositionZ.z;
+                }
+            }
+            
+            // Animar velas (parpadeo)
+            candles.forEach(candle => {
+                candle.time += delta * 2;
+                const intensity = candle.baseIntensity + Math.sin(candle.time) * 0.2;
+                candle.light.intensity = intensity;
+                
+                // Animar la llama
+                candle.flame.position.y = 0.7 + Math.sin(candle.time * 3) * 0.05;
+                candle.flame.scale.set(
+                    1 + Math.sin(candle.time * 5) * 0.1,
+                    1 + Math.sin(candle.time * 5) * 0.1,
+                    1 + Math.sin(candle.time * 5) * 0.1
+                );
+            });
+            
+            // Animar mineros
+            miners.forEach(miner => {
+                miner.time += delta;
+                
+                // Si tenemos un modelo GLTF con animaciones
+                if (miner.mixer) {
+                    miner.mixer.update(delta);
+                } else {
+                    // Animación de picoteo para el placeholder
+                    const pickAngle = Math.sin(miner.time * 3) * 0.5;
+                    miner.pick.rotation.z = Math.PI / 4 + pickAngle;
+                    
+                    // Animación del cuerpo
+                    miner.body.rotation.y = Math.sin(miner.time * 0.5) * 0.1;
+                    
+                    // Animación de la luz
+                    miner.light.intensity = 1.2 + Math.sin(miner.time * 2) * 0.2;
+                    
+                    // Animación de la lámpara
+                    miner.lamp.material.emissiveIntensity = 2.0 + Math.sin(miner.time * 4) * 0.5;
+                    
+                    // Animación del cono de luz
+                    miner.lightCone.material.opacity = 0.3 + Math.sin(miner.time * 3) * 0.1;
+                }
+            });
+            
+            // Animar Tío de la Mina
+            if (uncle) {
+                uncle.time += delta;
+                
+                // Si tenemos un modelo GLTF con animaciones
+                if (uncle.mixer) {
+                    uncle.mixer.update(delta);
+                } else {
+                    // Animación de respiración para el placeholder
+                    const breathScale = 1 + Math.sin(uncle.time * 2) * 0.05;
+                    uncle.body.scale.set(breathScale, breathScale, breathScale);
+                    
+                    // Animación de los ojos
+                    uncle.leftEye.material.emissiveIntensity = 0.7 + Math.sin(uncle.time * 5) * 0.3;
+                    uncle.rightEye.material.emissiveIntensity = 0.7 + Math.sin(uncle.time * 5) * 0.3;
+                }
+                
+                // Animación de la luz
+                if (uncle.light) {
+                    uncle.light.intensity = 0.8 + Math.sin(uncle.time * 3) * 0.2;
+                }
+            }
+            
+            prevTime = time;
+            renderer.render(scene, camera);
+        }
+
+        // Manejar cambio de tamaño de ventana
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        });
+
+        // Inicializar la aplicación
+        init();
+    </script>
+</body>
+</html>

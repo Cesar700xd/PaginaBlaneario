@@ -1,0 +1,816 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Reservas en las Aguas Termales de Uncía">
+  <title>Reservas - Aguas Termales de Uncía</title>
+  
+  <!-- Font Awesome para iconos -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  
+  <!-- Three.js -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  
+  <!-- Hoja de estilos -->
+  <style>
+    /* Estilos generales */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      line-height: 1.6;
+      color: #fff;
+      overflow-x: hidden;
+      background-color: #0a192f;
+    }
+    
+    /* Fondo con Three.js */
+    #three-canvas {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: -1;
+    }
+    
+    /* Contenido principal */
+    .contenido-principal {
+      position: relative;
+      z-index: 1;
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 2rem;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+    
+    /* Navegación */
+    .nav-header {
+      margin-bottom: 2rem;
+    }
+    
+    .btn-volver {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.75rem 1.5rem;
+      background-color: rgba(255, 255, 255, 0.1);
+      color: #fff;
+      text-decoration: none;
+      border-radius: 50px;
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      transition: all 0.3s ease;
+    }
+    
+    .btn-volver:hover {
+      background-color: rgba(255, 255, 255, 0.2);
+      transform: translateY(-3px);
+      box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+    }
+    
+    /* Encabezado */
+    header {
+      text-align: center;
+      margin-bottom: 3rem;
+    }
+    
+    h1 {
+      font-size: 3rem;
+      margin-bottom: 1rem;
+      text-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+      background: linear-gradient(90deg, #64b5f6, #4fc3f7, #29b6f6);
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+    }
+    
+    .brand-text {
+      font-size: 1.5rem;
+      font-weight: bold;
+      letter-spacing: 2px;
+    }
+    
+    .subtitle {
+      font-size: 1.2rem;
+      font-weight: normal;
+      color: #81d4fa;
+    }
+    
+    /* Sección de contacto */
+    .contacto-container {
+      flex-grow: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 2rem;
+    }
+    
+    .contacto-info {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 2rem;
+    }
+    
+    .info-card, .formulario-card {
+      background-color: rgba(255, 255, 255, 0.1);
+      backdrop-filter: blur(10px);
+      border-radius: 15px;
+      padding: 2rem;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+    
+    .info-card:hover, .formulario-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 12px 40px rgba(0, 0, 0, 0.2);
+    }
+    
+    .info-card h2, .formulario-card h2 {
+      margin-bottom: 1.5rem;
+      font-size: 1.8rem;
+      color: #81d4fa;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    
+    .info-item {
+      display: flex;
+      margin-bottom: 1.5rem;
+      align-items: flex-start;
+      gap: 1rem;
+    }
+    
+    .info-item i {
+      font-size: 1.5rem;
+      color: #4fc3f7;
+      margin-top: 0.25rem;
+    }
+    
+    .info-item h3 {
+      margin-bottom: 0.5rem;
+      font-size: 1.2rem;
+      color: #e1f5fe;
+    }
+    
+    .info-item p, .info-item address {
+      font-style: normal;
+      color: #b3e5fc;
+    }
+    
+    a {
+      color: #81d4fa;
+      text-decoration: none;
+      transition: color 0.3s ease;
+    }
+    
+    a:hover {
+      color: #4fc3f7;
+      text-decoration: underline;
+    }
+    
+    /* Botón de WhatsApp */
+    .btn-whatsapp {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      width: 100%;
+      padding: 1rem;
+      background: linear-gradient(90deg, #25D366, #128C7E);
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      font-size: 1.2rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      text-decoration: none;
+      margin-top: 1.5rem;
+    }
+    
+    .btn-whatsapp:hover {
+      background: linear-gradient(90deg, #128C7E, #075E54);
+      transform: translateY(-3px);
+      box-shadow: 0 8px 20px rgba(37, 211, 102, 0.4);
+      text-decoration: none;
+      color: #fff;
+    }
+    
+    .btn-whatsapp i {
+      font-size: 1.5rem;
+    }
+    
+    .whatsapp-info {
+      text-align: center;
+      margin-bottom: 1.5rem;
+      color: #b3e5fc;
+      font-size: 1.1rem;
+    }
+    
+    /* Pie de página */
+    .site-footer {
+      text-align: center;
+      padding: 1.5rem 0;
+      margin-top: 2rem;
+      color: #b3e5fc;
+      font-size: 0.9rem;
+    }
+    
+    /* Clases de utilidad */
+    .visually-hidden {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      padding: 0;
+      margin: -1px;
+      overflow: hidden;
+      clip: rect(0, 0, 0, 0);
+      white-space: nowrap;
+      border: 0;
+    }
+    
+    /* Diseño responsivo */
+    @media (max-width: 768px) {
+      h1 {
+        font-size: 2.5rem;
+      }
+      
+      .brand-text {
+        font-size: 1.2rem;
+      }
+      
+      .contacto-info {
+        grid-template-columns: 1fr;
+      }
+      
+      .btn-whatsapp {
+        font-size: 1rem;
+        padding: 0.8rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <!-- Canvas para Three.js -->
+  <canvas id="three-canvas"></canvas>
+
+  <!-- Contenido principal -->
+  <main class="contenido-principal">
+    <!-- Navegación -->
+    <nav class="nav-header">
+      <a class="btn-volver" href="index.html" aria-label="Volver a página principal">
+        <i class="fas fa-arrow-left" aria-hidden="true"></i> Volver
+      </a>
+    </nav>
+
+    <!-- Encabezado -->
+    <header>
+      <h1>Reservas</h1>
+      <div class="brand-text">
+        AGUAS TERMALES<br>
+        <span class="subtitle">DE UNCÍA</span>
+      </div>
+    </header>
+
+    <!-- Sección de contacto -->
+    <section class="contacto-container" aria-labelledby="contacto-heading">
+      <h2 id="contacto-heading" class="visually-hidden">Información de contacto</h2>
+      
+      <!-- Información de contacto -->
+      <div class="contacto-info">
+        <article class="info-card">
+          <h2><i class="fas fa-info-circle" aria-hidden="true"></i> Información de Reserva</h2>
+          
+          <div class="info-item">
+            <i class="fas fa-clock" aria-hidden="true"></i>
+            <div>
+              <h3>Horario de Atención</h3>
+              <p>
+                Lunes a Domingo: 9:00 AM - 6:00 PM<br>
+                ingreso por la noche de 20:00 PM 1:00 AM
+              </p>
+            </div>
+          </div>
+          
+          <div class="info-item">
+            <i class="fas fa-calendar-alt" aria-hidden="true"></i>
+            <div>
+              <h3>Reservas</h3>
+              <p>
+                Realiza tu reserva con al menos 24 horas de anticipación.<br>
+                Confirmaremos tu reserva vía WhatsApp.
+              </p>
+            </div>
+          </div>
+          
+          <div class="info-item">
+            <i class="fas fa-phone" aria-hidden="true"></i>
+            <div>
+              <h3>Teléfonos</h3>
+              <p>
+                <a href="tel:+59172800000">+591 72800000</a> | 
+                <a href="tel:+59176450000">+591 76450000</a>
+              </p>
+            </div>
+          </div>
+          
+          <div class="info-item">
+            <i class="fab fa-whatsapp" aria-hidden="true"></i>
+            <div>
+              <h3>WhatsApp</h3>
+              <p>
+                <a href="https://wa.me/59177147387" target="_blank" rel="noopener noreferrer">+591 72800000</a>
+              </p>
+            </div>
+          </div>
+        </article>
+
+        <!-- Botón de WhatsApp -->
+        <article class="formulario-card">
+          <h2><i class="fas fa-calendar-check" aria-hidden="true"></i> Realizar Reserva</h2>
+          
+          <div class="whatsapp-info">
+            Para realizar tu reserva o solicitar información, haz clic en el botón de abajo para contactarnos directamente por WhatsApp.
+          </div>
+          
+          <a href="https://wa.me/59177147387?text=Hola,%20me%20gustaría%20solicitar%20información%20o%20realizar%20una%20reserva%20en%20las%20Aguas%20Termales%20de%20Uncía." 
+             class="btn-whatsapp" target="_blank" rel="noopener noreferrer">
+            <i class="fab fa-whatsapp" aria-hidden="true"></i> Comunicarse por WhatsApp
+          </a>
+        </article>
+      </div>
+    </section>
+  </main>
+
+  <!-- Script para Three.js -->
+  <script>
+    // Inicializar Three.js
+    let scene, camera, renderer, particles, mouse = { x: 0, y: 0 };
+    let fishes = [], sharks = [], whales = [];
+    
+    function init() {
+      // Crear escena
+      scene = new THREE.Scene();
+      scene.fog = new THREE.Fog(0x0a192f, 10, 100);
+      
+      // Configurar cámara
+      camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+      camera.position.z = 30;
+      
+      // Configurar renderizador
+      renderer = new THREE.WebGLRenderer({ 
+        canvas: document.getElementById('three-canvas'),
+        alpha: true,
+        antialias: true 
+      });
+      renderer.setSize(window.innerWidth, window.innerHeight);
+      renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+      
+      // Crear partículas (burbujas)
+      createParticles();
+      
+      // Crear vida marina
+      createFishes(15); // 15 peces
+      createSharks(3);  // 3 tiburones
+      createWhales(2);  // 2 ballenas
+      
+      // Añadir iluminación ambiental
+      const ambientLight = new THREE.AmbientLight(0x4fc3f7, 0.5);
+      scene.add(ambientLight);
+      
+      // Añadir luz direccional
+      const directionalLight = new THREE.DirectionalLight(0x81d4fa, 1);
+      directionalLight.position.set(5, 5, 5);
+      scene.add(directionalLight);
+      
+      // Añadir luz puntual para simular luz solar bajo el agua
+      const pointLight = new THREE.PointLight(0xffffff, 0.8, 50);
+      pointLight.position.set(0, 20, 10);
+      scene.add(pointLight);
+      
+      // Event listeners
+      window.addEventListener('resize', onWindowResize);
+      window.addEventListener('mousemove', onMouseMove);
+      
+      // Iniciar animación
+      animate();
+    }
+    
+    function createParticles() {
+      const particlesCount = 800;
+      const positions = new Float32Array(particlesCount * 3);
+      const sizes = new Float32Array(particlesCount);
+      const colors = new Float32Array(particlesCount * 3);
+      
+      // Generar posiciones, tamaños y colores aleatorios
+      for (let i = 0; i < particlesCount; i++) {
+        const i3 = i * 3;
+        
+        // Posiciones
+        positions[i3] = (Math.random() - 0.5) * 100;
+        positions[i3 + 1] = (Math.random() - 0.5) * 100;
+        positions[i3 + 2] = (Math.random() - 0.5) * 100;
+        
+        // Tamaños
+        sizes[i] = Math.random() * 2 + 0.5;
+        
+        // Colores (tonos azules y turquesas)
+        const colorVariation = Math.random();
+        if (colorVariation < 0.3) {
+          // Azul claro
+          colors[i3] = 0.3;
+          colors[i3 + 1] = 0.7;
+          colors[i3 + 2] = 1.0;
+        } else if (colorVariation < 0.6) {
+          // Turquesa
+          colors[i3] = 0.2;
+          colors[i3 + 1] = 0.9;
+          colors[i3 + 2] = 0.9;
+        } else {
+          // Azul profundo
+          colors[i3] = 0.1;
+          colors[i3 + 1] = 0.5;
+          colors[i3 + 2] = 0.9;
+        }
+      }
+      
+      // Crear geometría
+      const particlesGeometry = new THREE.BufferGeometry();
+      particlesGeometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+      particlesGeometry.setAttribute('size', new THREE.BufferAttribute(sizes, 1));
+      particlesGeometry.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+      
+      // Crear material
+      const particlesMaterial = new THREE.PointsMaterial({
+        size: 0.5,
+        vertexColors: true,
+        transparent: true,
+        opacity: 0.8,
+        sizeAttenuation: true,
+        blending: THREE.AdditiveBlending
+      });
+      
+      // Crear sistema de partículas
+      particles = new THREE.Points(particlesGeometry, particlesMaterial);
+      scene.add(particles);
+    }
+    
+    function createFishes(count) {
+      for (let i = 0; i < count; i++) {
+        // Crear grupo para el pez
+        const fishGroup = new THREE.Group();
+        
+        // Cuerpo del pez (esfera aplanada)
+        const bodyGeometry = new THREE.SphereGeometry(1, 8, 6);
+        bodyGeometry.scale(1.5, 1, 0.5);
+        const bodyMaterial = new THREE.MeshPhongMaterial({ 
+          color: new THREE.Color(`hsl(${Math.random() * 60 + 30}, 80%, 60%)`),
+          shininess: 30
+        });
+        const body = new THREE.Mesh(bodyGeometry, bodyMaterial);
+        fishGroup.add(body);
+        
+        // Ojo del pez
+        const eyeGeometry = new THREE.SphereGeometry(0.2, 8, 8);
+        const eyeMaterial = new THREE.MeshPhongMaterial({ color: 0xffffff });
+        const eye = new THREE.Mesh(eyeGeometry, eyeMaterial);
+        eye.position.set(0.8, 0.3, 0.3);
+        fishGroup.add(eye);
+        
+        // Pupila
+        const pupilGeometry = new THREE.SphereGeometry(0.1, 8, 8);
+        const pupilMaterial = new THREE.MeshPhongMaterial({ color: 0x000000 });
+        const pupil = new THREE.Mesh(pupilGeometry, pupilMaterial);
+        pupil.position.set(0.9, 0.3, 0.4);
+        fishGroup.add(pupil);
+        
+        // Cola del pez
+        const tailGeometry = new THREE.ConeGeometry(0.7, 1.5, 4);
+        const tailMaterial = new THREE.MeshPhongMaterial({ 
+          color: bodyMaterial.color,
+          shininess: 30
+        });
+        const tail = new THREE.Mesh(tailGeometry, tailMaterial);
+        tail.rotation.z = Math.PI / 2;
+        tail.position.set(-1.5, 0, 0);
+        fishGroup.add(tail);
+        
+        // Aleta dorsal
+        const finGeometry = new THREE.ConeGeometry(0.3, 0.8, 4);
+        const finMaterial = new THREE.MeshPhongMaterial({ 
+          color: bodyMaterial.color,
+          shininess: 30
+        });
+        const fin = new THREE.Mesh(finGeometry, finMaterial);
+        fin.rotation.x = Math.PI / 4;
+        fin.position.set(0, 0.7, 0);
+        fishGroup.add(fin);
+        
+        // Posición inicial aleatoria
+        fishGroup.position.set(
+          (Math.random() - 0.5) * 80,
+          (Math.random() - 0.5) * 40,
+          (Math.random() - 0.5) * 40
+        );
+        
+        // Rotación inicial aleatoria
+        fishGroup.rotation.y = Math.random() * Math.PI * 2;
+        
+        // Velocidad aleatoria
+        fishGroup.userData = {
+          speed: Math.random() * 0.2 + 0.1,
+          turnSpeed: Math.random() * 0.02 + 0.01,
+          amplitude: Math.random() * 2 + 1,
+          frequency: Math.random() * 0.5 + 0.5
+        };
+        
+        scene.add(fishGroup);
+        fishes.push(fishGroup);
+      }
+    }
+    
+    function createSharks(count) {
+      for (let i = 0; i < count; i++) {
+        // Crear grupo para el tiburón
+        const sharkGroup = new THREE.Group();
+        
+        // Cuerpo del tiburón (cilindro alargado)
+        const bodyGeometry = new THREE.CylinderGeometry(0.8, 1.2, 5, 8);
+        bodyGeometry.rotateZ(Math.PI / 2);
+        const bodyMaterial = new THREE.MeshPhongMaterial({ 
+          color: 0x708090,
+          shininess: 40
+        });
+        const body = new THREE.Mesh(bodyGeometry, bodyMaterial);
+        sharkGroup.add(body);
+        
+        // Cabeza del tiburón (cono)
+        const headGeometry = new THREE.ConeGeometry(1.2, 2, 8);
+        headGeometry.rotateZ(-Math.PI / 2);
+        const headMaterial = new THREE.MeshPhongMaterial({ 
+          color: 0x708090,
+          shininess: 40
+        });
+        const head = new THREE.Mesh(headGeometry, headMaterial);
+        head.position.set(3.5, 0, 0);
+        sharkGroup.add(head);
+        
+        // Aleta dorsal
+        const dorsalFinGeometry = new THREE.ConeGeometry(0.8, 2, 4);
+        const dorsalFinMaterial = new THREE.MeshPhongMaterial({ 
+          color: 0x708090,
+          shininess: 40
+        });
+        const dorsalFin = new THREE.Mesh(dorsalFinGeometry, dorsalFinMaterial);
+        dorsalFin.rotation.x = Math.PI / 4;
+        dorsalFin.position.set(0, 1.5, 0);
+        sharkGroup.add(dorsalFin);
+        
+        // Aleta lateral
+        const sideFinGeometry = new THREE.ConeGeometry(0.6, 1.5, 4);
+        const sideFinMaterial = new THREE.MeshPhongMaterial({ 
+          color: 0x708090,
+          shininess: 40
+        });
+        
+        const sideFin1 = new THREE.Mesh(sideFinGeometry, sideFinMaterial);
+        sideFin1.rotation.z = Math.PI / 4;
+        sideFin1.position.set(0, 0, 1.2);
+        sharkGroup.add(sideFin1);
+        
+        const sideFin2 = new THREE.Mesh(sideFinGeometry, sideFinMaterial);
+        sideFin2.rotation.z = -Math.PI / 4;
+        sideFin2.position.set(0, 0, -1.2);
+        sharkGroup.add(sideFin2);
+        
+        // Cola del tiburón
+        const tailGeometry = new THREE.ConeGeometry(1.5, 2.5, 4);
+        const tailMaterial = new THREE.MeshPhongMaterial({ 
+          color: 0x708090,
+          shininess: 40
+        });
+        const tail = new THREE.Mesh(tailGeometry, tailMaterial);
+        tail.rotation.z = Math.PI / 2;
+        tail.position.set(-3.5, 0, 0);
+        sharkGroup.add(tail);
+        
+        // Ojo del tiburón
+        const eyeGeometry = new THREE.SphereGeometry(0.3, 8, 8);
+        const eyeMaterial = new THREE.MeshPhongMaterial({ color: 0x000000 });
+        const eye = new THREE.Mesh(eyeGeometry, eyeMaterial);
+        eye.position.set(4, 0.3, 0.5);
+        sharkGroup.add(eye);
+        
+        // Posición inicial aleatoria
+        sharkGroup.position.set(
+          (Math.random() - 0.5) * 80,
+          (Math.random() - 0.5) * 40,
+          (Math.random() - 0.5) * 40
+        );
+        
+        // Rotación inicial aleatoria
+        sharkGroup.rotation.y = Math.random() * Math.PI * 2;
+        
+        // Velocidad aleatoria
+        sharkGroup.userData = {
+          speed: Math.random() * 0.15 + 0.05,
+          turnSpeed: Math.random() * 0.015 + 0.005,
+          amplitude: Math.random() * 1.5 + 0.5,
+          frequency: Math.random() * 0.3 + 0.2
+        };
+        
+        scene.add(sharkGroup);
+        sharks.push(sharkGroup);
+      }
+    }
+    
+    function createWhales(count) {
+      for (let i = 0; i < count; i++) {
+        // Crear grupo para la ballena
+        const whaleGroup = new THREE.Group();
+        
+        // Cuerpo de la ballena (esfera grande)
+        const bodyGeometry = new THREE.SphereGeometry(3, 12, 8);
+        bodyGeometry.scale(1.5, 1, 0.7);
+        const bodyMaterial = new THREE.MeshPhongMaterial({ 
+          color: 0x1e3a5f,
+          shininess: 30
+        });
+        const body = new THREE.Mesh(bodyGeometry, bodyMaterial);
+        whaleGroup.add(body);
+        
+        // Cabeza de la ballena
+        const headGeometry = new THREE.SphereGeometry(2, 10, 8);
+        headGeometry.scale(1.2, 0.9, 0.8);
+        const headMaterial = new THREE.MeshPhongMaterial({ 
+          color: 0x1e3a5f,
+          shininess: 30
+        });
+        const head = new THREE.Mesh(headGeometry, headMaterial);
+        head.position.set(4, 0, 0);
+        whaleGroup.add(head);
+        
+        // Aleta dorsal
+        const dorsalFinGeometry = new THREE.ConeGeometry(0.8, 1.5, 4);
+        const dorsalFinMaterial = new THREE.MeshPhongMaterial({ 
+          color: 0x1e3a5f,
+          shininess: 30
+        });
+        const dorsalFin = new THREE.Mesh(dorsalFinGeometry, dorsalFinMaterial);
+        dorsalFin.rotation.x = Math.PI / 4;
+        dorsalFin.position.set(0, 2.5, 0);
+        whaleGroup.add(dorsalFin);
+        
+        // Aleta caudal (cola)
+        const tailGeometry = new THREE.ConeGeometry(2.5, 3, 4);
+        const tailMaterial = new THREE.MeshPhongMaterial({ 
+          color: 0x1e3a5f,
+          shininess: 30
+        });
+        const tail = new THREE.Mesh(tailGeometry, tailMaterial);
+        tail.rotation.z = Math.PI / 2;
+        tail.position.set(-5, 0, 0);
+        whaleGroup.add(tail);
+        
+        // Ojo de la ballena
+        const eyeGeometry = new THREE.SphereGeometry(0.4, 8, 8);
+        const eyeMaterial = new THREE.MeshPhongMaterial({ color: 0x000000 });
+        const eye = new THREE.Mesh(eyeGeometry, eyeMaterial);
+        eye.position.set(5, 0.5, 1);
+        whaleGroup.add(eye);
+        
+        // Espiráculo
+        const blowholeGeometry = new THREE.CylinderGeometry(0.2, 0.2, 0.5, 8);
+        const blowholeMaterial = new THREE.MeshPhongMaterial({ color: 0x000000 });
+        const blowhole = new THREE.Mesh(blowholeGeometry, blowholeMaterial);
+        blowhole.rotation.x = Math.PI / 2;
+        blowhole.position.set(4.5, 2.5, 0);
+        whaleGroup.add(blowhole);
+        
+        // Posición inicial aleatoria
+        whaleGroup.position.set(
+          (Math.random() - 0.5) * 60,
+          (Math.random() - 0.5) * 30,
+          (Math.random() - 0.5) * 30
+        );
+        
+        // Rotación inicial aleatoria
+        whaleGroup.rotation.y = Math.random() * Math.PI * 2;
+        
+        // Velocidad aleatoria
+        whaleGroup.userData = {
+          speed: Math.random() * 0.05 + 0.02,
+          turnSpeed: Math.random() * 0.01 + 0.003,
+          amplitude: Math.random() * 1 + 0.5,
+          frequency: Math.random() * 0.2 + 0.1
+        };
+        
+        scene.add(whaleGroup);
+        whales.push(whaleGroup);
+      }
+    }
+    
+    function onWindowResize() {
+      camera.aspect = window.innerWidth / window.innerHeight;
+      camera.updateProjectionMatrix();
+      renderer.setSize(window.innerWidth, window.innerHeight);
+    }
+    
+    function onMouseMove(event) {
+      mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+      mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
+    }
+    
+    function animate() {
+      requestAnimationFrame(animate);
+      
+      // Rotar partículas
+      if (particles) {
+        particles.rotation.x += 0.0005;
+        particles.rotation.y += 0.001;
+        
+        // Mover partículas hacia arriba (simulando burbujas)
+        const positions = particles.geometry.attributes.position.array;
+        for (let i = 0; i < positions.length; i += 3) {
+          positions[i + 1] += 0.05; // Movimiento hacia arriba
+          
+          // Reiniciar posición cuando llegan arriba
+          if (positions[i + 1] > 50) {
+            positions[i + 1] = -50;
+          }
+        }
+        particles.geometry.attributes.position.needsUpdate = true;
+        
+        // Responder al movimiento del ratón
+        particles.rotation.x += mouse.y * 0.001;
+        particles.rotation.y += mouse.x * 0.001;
+      }
+      
+      // Animar peces
+      fishes.forEach(fish => {
+        // Movimiento hacia adelante
+        fish.translateX(fish.userData.speed);
+        
+        // Movimiento oscilatorio vertical
+        fish.position.y += Math.sin(Date.now() * 0.001 * fish.userData.frequency) * 0.01 * fish.userData.amplitude;
+        
+        // Rotación suave
+        fish.rotation.y += Math.sin(Date.now() * 0.001 * fish.userData.frequency) * fish.userData.turnSpeed;
+        
+        // Si el pez se aleja demasiado, reiniciar posición
+        if (fish.position.x > 50) {
+          fish.position.x = -50;
+        }
+      });
+      
+      // Animar tiburones
+      sharks.forEach(shark => {
+        // Movimiento hacia adelante
+        shark.translateX(shark.userData.speed);
+        
+        // Movimiento oscilatorio vertical
+        shark.position.y += Math.sin(Date.now() * 0.001 * shark.userData.frequency) * 0.01 * shark.userData.amplitude;
+        
+        // Rotación suave
+        shark.rotation.y += Math.sin(Date.now() * 0.001 * shark.userData.frequency) * shark.userData.turnSpeed;
+        
+        // Si el tiburón se aleja demasiado, reiniciar posición
+        if (shark.position.x > 50) {
+          shark.position.x = -50;
+        }
+      });
+      
+      // Animar ballenas
+      whales.forEach(whale => {
+        // Movimiento hacia adelante
+        whale.translateX(whale.userData.speed);
+        
+        // Movimiento oscilatorio vertical
+        whale.position.y += Math.sin(Date.now() * 0.001 * whale.userData.frequency) * 0.01 * whale.userData.amplitude;
+        
+        // Rotación suave
+        whale.rotation.y += Math.sin(Date.now() * 0.001 * whale.userData.frequency) * whale.userData.turnSpeed;
+        
+        // Si la ballena se aleja demasiado, reiniciar posición
+        if (whale.position.x > 50) {
+          whale.position.x = -50;
+        }
+      });
+      
+      renderer.render(scene, camera);
+    }
+    
+    // Inicializar cuando se carga la página
+    window.addEventListener('load', init);
+  </script>
+</body>
+</html>
